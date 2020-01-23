@@ -1,0 +1,1666 @@
+<!--If there isn't a logged in user show a message-->
+<div *ngIf="appData.loggedInUser == null" class="no-dashboard-container">
+  <div (click)="_clickCreateAccountOrLogin()" class="link">Create account or login</div> to access your dashbaord.
+  <br>
+  <div style="margin-top: 1rem;">
+    Creating an account is quick and anonymous (it just generates a public/private key pair for you).
+    Once your account is created you will be able to use this page to see your see your orders, send Ultra, manage your listings, and more.
+  </div>
+</div>
+<!--If the user is logged in render the top bar and content depending on what's selected-->
+<div *ngIf="appData.loggedInUser != null">
+  <!--The top bar with buttons in it-->
+  <div class="top-button-container">
+    <!--The orders page-->
+    <div class="btn btn-light"
+      [ngClass]="{'selected': appData.dashboardPageState.selectedPage === DashboardPage.Orders}"
+      (click)="appData.dashboardPageState.selectedPage = DashboardPage.Orders">
+
+      <div class="divtext">
+        Orders
+        <span *ngIf="appData != null && appData.loggedInUser != null && appData.loggedInUser.NumOrderActionItems != null && appData.loggedInUser.NumOrderActionItems !== 0" style="margin-left: .5rem;">
+          <div class="action-items-badge">
+            {{appData.loggedInUser.NumOrderActionItems}}
+          </div>
+        </span>
+      </div>
+    </div>
+    <!--The manage listings page (only shown if user is a merchant)-->
+    <div *ngIf="appData.loggedInUser.MerchantEntry != null" class="btn btn-light"
+      [ngClass]="{'selected': appData.dashboardPageState.selectedPage === DashboardPage.Listings}"
+      (click)="appData.dashboardPageState.selectedPage = DashboardPage.Listings">
+      <div class="divtext">
+        Listings
+        <span *ngIf="appData != null && appData.loggedInUser != null && appData.loggedInUser.NumListingActionItems != null && appData.loggedInUser.NumListingActionItems !== 0" style="margin-left: .5rem;">
+          <div class="action-items-badge">
+            {{appData.loggedInUser.NumListingActionItems}}
+          </div>
+        </span>
+      </div>
+    </div>
+    <!--The SendUltra page-->
+    <div class="btn btn-light"
+      [ngClass]="{'selected': appData.dashboardPageState.selectedPage === DashboardPage.SendUltra}"
+      (click)="appData.dashboardPageState.selectedPage = DashboardPage.SendUltra">
+
+      <div class="divtext">
+        Send Ultra
+      </div>
+    </div>
+    <!--The Signatures page-->
+    <div class="btn btn-light"
+      [ngClass]="{'selected': appData.dashboardPageState.selectedPage === DashboardPage.Signatures}"
+      (click)="appData.dashboardPageState.selectedPage = DashboardPage.Signatures">
+
+      <div class="divtext">
+        Signatures
+      </div>
+    </div>
+    <!--The transactions page-->
+    <div class="btn btn-light"
+      [ngClass]="{'selected': appData.dashboardPageState.selectedPage === DashboardPage.Transactions}"
+      (click)="appData.dashboardPageState.selectedPage = DashboardPage.Transactions">
+
+      <div class="divtext">
+        Transactions (beta)
+      </div>
+    </div>
+  </div>
+
+  <!--The actual content depending on the tab selected-->
+  <div class="content-container">  
+    <!--Orders tab content-->
+    <div *ngIf="appData.dashboardPageState.selectedPage === DashboardPage.Orders" class="order-container">
+      <!--Explanation of orders-->
+      <div *ngIf="appData.loggedInUser.Orders != null && appData.loggedInUser.Orders.length > 0" class="top-order-help-text" style="font-weight: normal;">
+        All of your orders will appear below.
+        <ul>
+          <li>
+            The "Help Text" associated with each order
+            should help you understand the current status of the order.
+          </li>
+          <li>
+            Orders that require action from you will
+            show "Action Required" in red below. Clicking on the "Action Required" field
+            will show you what you need to do in order to respond to the order.
+          </li>
+          <!--<li>-->
+            <!--For more information on the lifecycle of an order, hover over the "Current Status" tooltip of an order.-->
+          <!--</li>-->
+        </ul>
+      </div>
+      <div *ngIf="appData.loggedInUser.Orders == null || appData.loggedInUser.Orders.length === 0" class="top-order-help-text" style="font-weight: normal;">
+        You have no orders currently. When you place orders, they will appear below.
+        <ul>
+          <li>To place an order, head to the "Market" tab and click on the title of a listing.</li>
+          <li *ngIf="appData.loggedInUser.MerchantEntry == null">
+            To become a merchant who can create listings and accept orders, head to the
+            <span (click)="_clickCreateAccountOrLogin()" style="color: white; text-decoration: underline; cursor: pointer;">accounts page</span>.
+          </li>
+          <li *ngIf="appData.loggedInUser.MerchantEntry != null">
+            To create a new listing to accept orders for, head to the "Listings" sub-tab of the "Dashboard" page.
+          </li>
+        </ul>
+      </div>
+
+
+      <!--Information for all orders-->
+      <div *ngFor="let order of appData.loggedInUser.Orders; index as orderIndex">
+        <div *ngIf="order.BuyerMessage != null" class="single-entry-container">
+          <div class="image-container">
+            <div class="image-flex-container">
+              <div class="image" [style.background-image]="'url('+order.ListingMessage.ImageUrls[0]+')'" style="cursor: auto;">
+              </div>
+            </div>
+          </div>
+          <div class="summary-content-container">
+            <div class="subcontent-container">
+              <!--Status-->
+              <div class="field-container">
+                <div class="label">
+                  Current Status
+                  <span (mouseenter)="showOrderCurrentStatusTooltip = orderIndex" (mouseleave)="showOrderCurrentStatusTooltip = -1" class="info-tooltip">
+                    (?)
+                    <div *ngIf="showOrderCurrentStatusTooltip === orderIndex" class="info-tooltip-contents order-current-status">
+                      The lifecycle of an order starts with it being placed by a buyer. Below is a diagram of everything that can happen
+                      to an order after it is placed.
+                      <div class="order-lifecycle-image" style="margin-top: 1rem;"></div>
+                    </div>
+                  </span>:
+                </div>
+                <div class="value">
+                  {{order.State}}
+                </div>
+              </div>
+
+              <!--Time created and updated. Also RejectReason and ReviewText if it's set-->
+              <div style="padding-left: 1.5rem;">
+                <!--Your Role-->
+                <div class="field-container">
+                  <div class="label">
+                    Your Role:
+                  </div>
+                  <div class="value">
+                    <div *ngIf="order.IsBuyer">
+                      Buyer 
+                    </div>
+                    <div *ngIf="!order.IsBuyer">
+                      Merchant 
+                    </div>
+                  </div>
+                </div>
+                <!--Help text-->
+                <div class="field-container">
+                  <div class="label">
+                    Help Text:
+                  </div>
+                  <div class="value" style="width: 40rem;">
+                    <!--Placed-->
+                    <div *ngIf="order.State === 'Placed'">
+                      <div *ngIf="order.IsBuyer">
+                        Waiting on the merchant to confirm the order. Once the order is confirmed the merchant has up to two weeks to get you your product, though most merchants are much faster.
+                      </div>
+                      <div *ngIf="!order.IsBuyer">
+                        Waiting on you to confirm or reject the order. Once the order is confirmed you will have up to two weeks to ship the order to the buyer, though we recommend taking no longer than a few days to avoid negatively impacting your score. Rejecting an order has no negative impact on your score.
+                      </div>
+                    </div>
+                    <!--Cancelled-->
+                    <div *ngIf="order.State === 'Cancelled'">
+                      <div *ngIf="order.IsBuyer">
+                        You cancelled this order before it was confirmed and received a full refund as a result.
+                      </div>
+                      <div *ngIf="!order.IsBuyer">
+                        The buyer cancelled this order before it was confirmed and received a full refund as a result. Your score was not impacted.
+                      </div>
+                    </div>
+                    <!--Rejected-->
+                    <div *ngIf="order.State === 'Rejected'">
+                      <div *ngIf="order.IsBuyer">
+                        The merchant rejected your order. See the "Reject Reason" to understand why (note that sometimes merchants do not provide a reason).
+                      </div>
+                      <div *ngIf="!order.IsBuyer">
+                        You rejected this order. Rejecting an order does not impact your merchant score.
+                      </div>
+                    </div>
+                    <!--Confirmed-->
+                    <div *ngIf="order.State === 'Confirmed'">
+                      <div *ngIf="order.IsBuyer">
+                        The merchant has confirmed your order. The merchant has two weeks from the time of confirmation to fulfill your order. If you do not receive your order in this time-frame, you should give the merchant a negative review.
+                      </div>
+                      <div *ngIf="!order.IsBuyer">
+                        <div *ngIf="_hasAction(order.PossibleActions, 'fulfill_order')">
+                          At least two weeks have passed since this order was confirmed and the buyer has not left a review. If you want, you can mark this order as fulfilled
+                          below. Doing so improves your merchant score. 
+                        </div>
+                        <div *ngIf="!_hasAction(order.PossibleActions, 'fulfill_order')">
+                          You have confirmed this order. You have two weeks to fulfill this order. If you don't fulfill this order within two weeks, the buyer is highly likely to give you a negative review, which will affect your score materially. Note also
+                          that confirmed orders count against your score until either two weeks pass or the buyer leaves a review (whichever comes first). This helps prevent exit scams. If you find you can't fulfill this order, you can refund the buyer below
+                          to avoid any negative impact to your score.
+                        </div>
+                      </div>
+                    </div>
+                    <!--Fulfilled-->
+                    <div *ngIf="order.State === 'Fulfilled'">
+                      <div *ngIf="order.IsBuyer">
+                        Two weeks have passed since the order was confirmed but you have yet to review the order. Please leave a review. If you still haven't received the product, make it a negative review.
+                      </div>
+                      <div *ngIf="!order.IsBuyer">
+                        Two weeks have passed since the order was confirmed, but the buyer has yet to review the order. This does not count against your score, but if the buyer were to leave a positive
+                        review that would be better for you.
+                      </div>
+                    </div>
+                    <!--Reviewed-->
+                    <div *ngIf="order.State === 'Reviewed'">
+                      <div *ngIf="order.IsBuyer">
+                        You have reviewed the order and it is now complete. If you'd like to update your review you can do so below.
+                      </div>
+                      <div *ngIf="!order.IsBuyer">
+                        The user has left a review and the order is therefore complete. If you are unsatisfied with the review you can offer
+                        the user a refund (which expunges the negative review from your history and score) or you can message the buyer to
+                        try and get them to improve their review without a refund.
+                      </div>
+                    </div>
+                    <!--Refunded-->
+                    <div *ngIf="order.State === 'Refunded'">
+                      <div *ngIf="order.IsBuyer">
+                        The merchant has refunded your order.
+                      </div>
+                      <div *ngIf="!order.IsBuyer">
+                        You have refunded the buyer's order. When an order is refunded, its impact on your merchant score is expunged.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div *ngIf="order.State === 'Rejected' && order.RejectReason != null && order.RejectReason.length !== 0" class="field-container">
+                  <div class="label">
+                    Reject Reason:
+                  </div>
+                  <div class="value">
+                    {{order.RejectReason}}
+                  </div>
+                </div>
+
+                <div *ngIf="order.State === 'Reviewed'" class="field-container">
+                  <div class="label">
+                    Review Type:
+                  </div>
+                  <div *ngIf="order.ReviewType === 'Negative'" class="value negative">
+                    Negative
+                  </div>
+                  <div *ngIf="order.ReviewType === 'Neutral'" class="value">
+                    Neutral
+                  </div>
+                  <div *ngIf="order.ReviewType === 'Positive'" class="value positive">
+                    Positive
+                  </div>
+                </div>
+                <div *ngIf="order.State === 'Reviewed'" class="field-container">
+                  <div class="label">
+                    Review Text:
+                  </div>
+                  <div class="value">
+                    {{order.ReviewText}}
+                  </div>
+                </div>
+
+              </div>
+
+              <!--Listing Title-->
+              <div *ngIf="order.ListingMessage != null" class="field-container">
+                <div class="label">
+                  Listing Title:
+                </div>
+                <div class="value">
+                  {{order.ListingMessage.Title}}
+                </div>
+              </div>
+
+              <!--Listing Description-->
+              <div *ngIf="order.ListingMessage != null" class="field-container">
+                <div class="label">
+                  Listing Description:
+                </div>
+                <div class="value">
+                  <span (mouseenter)="showOrderListingDescriptionTooltip = orderIndex" (mouseleave)="showOrderListingDescriptionTooltip = -1" class="info-tooltip" style="text-decoration: underline">
+                    Hover to View
+                    <div *ngIf="showOrderListingDescriptionTooltip === orderIndex" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto; white-space: pre-wrap;">{{order.ListingMessage.Body}}</div>
+                  </span>
+
+                </div>
+              </div>
+
+              <!--Merchant Username-->
+              <div *ngIf="order.MerchantEntry != null" class="field-container">
+                <div class="label">
+                  Merchant Username:
+                </div>
+                <div class="value">
+                  {{order.MerchantEntry.Username}}
+                </div>
+              </div>
+
+              <!--Order Details-->
+              <div class="field-container">
+                <div class="label">
+                  Order Details:
+                </div>
+                <div class="value">
+                  <span *ngIf="showOrderDetails !== orderIndex" (click)="showOrderDetails = orderIndex" class="info-tooltip" style="text-decoration: underline">
+                    Click to Show
+                  </span>
+                  <span *ngIf="showOrderDetails === orderIndex" (click)="showOrderDetails = -1" class="info-tooltip" style="text-decoration: underline">
+                    Click to Hide
+                  </span>
+                </div>
+              </div>
+              <div *ngIf="showOrderDetails === orderIndex" style="padding-left: 1.5rem"> 
+                <!--Buyer Public Key-->
+                <div *ngIf="order.BuyerPublicKeyBase58Check != null" class="field-container">
+                  <div class="label">
+                    Buyer Public Key:
+                  </div>
+                  <div class="value">
+                    <div style="display: inline-block; width: 34rem;">{{order.BuyerPublicKeyBase58Check}}</div>
+                    <div class="btn btn-light"  (click)="appData._copyText(order.BuyerPublicKeyBase58Check)" style="margin-left: .5rem; height: 2rem;">
+                      <div class="divtext">
+                        Copy
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!--Merchant Public Key-->
+                <div *ngIf="order.MerchantEntry != null" class="field-container">
+                  <div class="label">
+                    Merchant Public Key:
+                  </div>
+                  <div class="value">
+                    <div style="display: inline-block; width: 34rem;">{{order.MerchantEntry.PublicKeyBase58Check}}</div> 
+                    <div class="btn btn-light"  (click)="appData._copyText(order.MerchantEntry.PublicKeyBase58Check)" style="margin-left: .5rem; height: 2rem;">
+                      <div class="divtext">
+                        Copy
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!--ConfirmedAt-->
+                <div *ngIf="order.ConfirmedAtTstampSecs != null && order.ConfirmedAtTstampSecs !== 0" class="field-container">
+                  <div class="label">
+                    Confirmed At:
+                  </div>
+                  <div class="value">
+                    {{_tstampToDate(order.ConfirmedAtTstampSecs)}}
+                  </div>
+                </div>
+                
+                <!--LastModifiedAt-->
+                <div *ngIf="order.LastModifiedAtTstampSecs != null && order.LastModifiedAtTstampSecs !== 0" class="field-container">
+                  <div class="label">
+                    Last Modified At:
+                  </div>
+                  <div class="value">
+                    {{_tstampToDate(order.LastModifiedAtTstampSecs)}}
+                  </div>
+                </div>
+
+                <div *ngIf="order.BuyerMessage != null">
+                  <div class="field-container">
+                    <div class="label" style="margin-bottom: 1rem;">
+                      Required Fields:
+                    </div>
+                  </div>
+                  <!--Required fields-->
+                  <div style="padding-left: 1.5rem;">
+                    <div *ngFor="let requiredField of order.BuyerMessage.RequiredFields; index as requiredFieldIndex" class="manage-listings-value">
+                      <div class="field-container">
+                        <div class="label" style="white-space: pre; font-weight: normal;">{{order.ListingMessage.RequiredFields[requiredFieldIndex]}}</div>
+                        <div class="value" style="white-space: pre;">{{requiredField}}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <!--Optional fields-->
+                  <div class="field-container">
+                    <div class="label" style="margin-bottom: 1rem;">
+                      Optional Fields:
+                    </div>
+                  </div>
+                  <!--Optional fields-->
+                  <div style="padding-left: 1.5rem;">
+                    <div *ngFor="let optionalField of order.BuyerMessage.OptionalFields; index as optionalFieldIndex" class="manage-listings-value">
+                      <div class="field-container">
+                        <div class="label" style="white-space: pre; font-weight: normal;">{{order.ListingMessage.OptionalFields[optionalFieldIndex]}}</div>
+                        <div class="value" style="white-space: pre;">{{optionalField}}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!--Buyer information-->
+                  <div *ngIf="order.IsBuyer">
+
+                    <!--Item subtotal-->
+                    <div class="field-container">
+                      <div class="label">
+                        Item Subtotal:
+                      </div>
+                      <div class="value">
+                        {{appData.nanosToUltra(order.PaymentAmountNanos + order.ReferrerAmountNanos - order.BuyerMessage.TipAmountNanos)}} Ultra
+                        (= ~{{appData.nanosToUSD(order.PaymentAmountNanos + order.ReferrerAmountNanos - order.BuyerMessage.TipAmountNanos)}} USD)
+                      </div>
+                    </div>
+
+                    <div style="padding-left: 1.5rem;">
+
+                      <!--Item quantity-->
+                      <div class="field-container">
+                        <div class="label">
+                          Item Quantity:
+                        </div>
+                        <div class="value">
+                          {{order.BuyerMessage.ItemQuantity}} {{order.ListingMessage.UnitNamePlural}}
+                        </div>
+                      </div>
+
+                      <!--Item Price-->
+                      <div class="field-container">
+                        <div class="label">
+                          Item Price:
+                        </div>
+                        <div class="value">
+                          {{appData.nanosToUltra(order.BuyerPricePerItem)}} Ultra (= ~{{appData.nanosToUSD(order.BuyerPricePerItem)}} USD)
+                        </div>
+                      </div>
+                      
+                    </div>
+
+                    <!--Tip Amount (unadjusted)-->
+                    <div class="field-container">
+                      <div class="label">
+                        Tip Amount:
+                      </div>
+                      <div class="value">
+                        {{appData.nanosToUltra(order.BuyerMessage.TipAmountNanos)}} Ultra (= ~{{appData.nanosToUSD(order.BuyerMessage.TipAmountNanos)}} USD)
+                      </div>
+                    </div>
+
+                    <!--Amount Paid (repeated from above)-->
+                    <div *ngIf="order.IsBuyer" class="field-container">
+                      <div class="label">
+                        Amount Paid:
+                      </div>
+                      <div class="value">
+                        {{appData.nanosToUltra(order.PaymentAmountNanos + order.ReferrerAmountNanos)}} Ultra
+                        (= ~{{appData.nanosToUSD(order.PaymentAmountNanos + order.ReferrerAmountNanos)}} USD)
+                      </div>
+                    </div>
+                    
+                  </div>
+
+                  <!--Merchant information-->
+                  <div *ngIf="!order.IsBuyer">
+                    <!--Revenue subtotal-->
+                    <div class="field-container">
+                      <div class="label">
+                        Revenue Subtotal:
+                      </div>
+                      <div class="value">
+                        {{appData.nanosToUltra(order.MerchantRevenueWithoutTip)}} Ultra (= ~{{appData.nanosToUSD(order.MerchantRevenueWithoutTip)}} USD)
+                      </div>
+                    </div>
+
+                    <div style="padding-left: 1.5rem;">
+                      <!--Item quantity-->
+                      <div class="field-container">
+                        <div class="label">
+                          Item Quantity:
+                        </div>
+                        <div class="value">
+                          {{order.BuyerMessage.ItemQuantity}} {{order.ListingMessage.UnitNamePlural}}
+                        </div>
+                      </div>
+
+                      <!--Item Price-->
+                      <div class="field-container">
+                        <div class="label">
+                          Item Price:
+                        </div>
+                        <div class="value">
+                          {{appData.nanosToUltra(order.MerchantPricePerItem)}} Ultra (= ~{{appData.nanosToUSD(order.MerchantPricePerItem)}} USD)
+                        </div>
+                      </div>
+                    </div>
+
+                    <!--Tip Amount (after commissions)-->
+                    <div class="field-container">
+                      <div class="label">
+                        Tip Amount (After Commissions)
+                        <span (mouseenter)="showTipAfterCommissionsTooltip = true" (mouseleave)="showTipAfterCommissionsTooltip = false" class="info-tooltip">
+                          (?)
+                          <div *ngIf="showTipAfterCommissionsTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                            When a buyer pays, including when they leave a tip, a small commission is burned. Nobody gets this commission, not even the miners; rather, it is just burned,
+                            which serves to increase the value of Ultra overall, as the more Ultra is burned the more scarce and valuable
+                            it becomes. Along these lines, if you hold a significant amount of Ultra then the effect of this commission could actually be
+                            overall beneficial as the extent to which your holdings increase in value could far exceed the commissions you
+                            pay individually. The amount shown on this line-item is the amount of tip you will receive after subtracting off the commission.
+                          </div>
+                        </span>:
+                      </div>
+                      <div class="value">
+                        {{appData.nanosToUltra(order.MerchantTipRevenue)}} Ultra (= ~{{appData.nanosToUSD(order.MerchantTipRevenue)}} USD)
+                      </div>
+                    </div>
+                    <div style="padding-left: 1.5rem;">
+                      <div class="field-container">
+                        <div class="label">
+                          Tip Amount (Before Commissions):
+                        </div>
+                        <div class="value">
+                          {{appData.nanosToUltra(order.BuyerMessage.TipAmountNanos)}} Ultra (= ~{{appData.nanosToUSD(order.BuyerMessage.TipAmountNanos)}} USD)
+                        </div>
+                      </div>
+                      <div class="field-container">
+                        <div class="label">
+                          Tip Commissions:
+                        </div>
+                        <div class="value">
+                          {{appData.nanosToUltra(order.BuyerMessage.TipAmountNanos-order.MerchantTipRevenue)}} Ultra (= ~{{appData.nanosToUSD(order.BuyerMessage.TipAmountNanos-order.MerchantTipRevenue)}} USD)
+                        </div>
+                      </div>
+                      
+                    </div>
+
+                    <!--Total Revenue-->
+                    <div class="field-container">
+                      <div class="label">
+                        Total Revenue:
+                      </div>
+                      <div class="value">
+                        {{appData.nanosToUltra(order.RevenueNanos)}} Ultra (= ~{{appData.nanosToUSD(order.RevenueNanos)}} USD)
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+                <div *ngIf="order.BuyerMessage == null">
+                  Sorry, but the details for this order either weren't parsable or weren't decryptable. This could
+                  have been due to a bug in the buyer's software. If this is a problem, simply cancel or reject the
+                  order, ideally including a "reject reason" to let the buyer know why there was an issue.
+                </div>
+              </div>
+
+              <!--OrderID-->
+              <div class="field-container">
+                <div class="label">
+                  Order ID:
+                </div>
+                <div class="value">
+                  <div style="display: inline-block; width: 32rem;">{{order.OrderIDBase58Check}}</div>
+                  <div class="btn btn-light"  (click)="appData._copyText(order.OrderIDBase58Check)" style="margin-left: .5rem; height: 2rem;">
+                    <div class="divtext">
+                      Copy
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!--Actions-->
+              <div class="field-container">
+                <div class="label">
+                  <div *ngIf="!order.IsActionRequired">
+                    Optional Actions:
+                  </div>
+                  <div  *ngIf="order.IsActionRequired" class="action-required">
+                    Action Required:
+                  </div>
+                </div>
+                <div class="value">
+                  <span *ngIf="showOrderActions !== orderIndex" (click)="showOrderActions = orderIndex" class="info-tooltip" style="text-decoration: underline">
+                    Click to Show
+                  </span>
+                  <span *ngIf="showOrderActions === orderIndex" (click)="showOrderActions = -1" class="info-tooltip" style="text-decoration: underline">
+                    Click to Hide
+                  </span>
+                </div>
+              </div>
+              <!--Action container. Shows buttons for all possible actions-->
+              <div *ngIf="showOrderActions === orderIndex" style="padding-left: 1.5rem; padding-top: .5rem;">
+                <!--Reject reason for merchant-->
+                <div *ngIf="_hasAction(order.PossibleActions, 'reject')" class="field-container" style="margin-bottom: .5rem;">
+                  <div class="label">
+                    Rejection Reason
+                    <span (mouseenter)="showRejectionReasonTooltip = true" (mouseleave)="showRejectionReasonTooltip = false" class="info-tooltip">
+                      (?)
+                      <div *ngIf="showRejectionReasonTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                        Usually, when you reject an order as a merchant, it is helpful to the buyer if you explain why you
+                        are rejecting the order. Whatever information you include in this field will be encrypted with the
+                        buyer's public key and will thus only be visible to them. A common rejection reason is that the
+                        address provided is not properly formatted. This field is optional. If you are confirming the order
+                        then leave this field blank.
+                      </div>
+                    </span>:
+                  </div>
+                  <div class="value">
+                    <input class="input" style="width: 35rem;" placeholder="Enter a rejection reason" [(ngModel)]="orderActionData.rejectReason"/>    
+                  </div>
+                </div>
+
+                <!--Review fields for buyer-->
+                <div *ngIf="_hasAction(order.PossibleActions, 'review') || _hasAction(order.PossibleActions, 'edit_review')" style="margin-bottom: .5rem;">
+                  <div>
+                    <div class="listing-field-label">
+                      <input [(ngModel)]="orderActionData.reviewType" type="radio" value="negative"><span class="negative" style="margin-left: .5rem;">Negative</span>
+                    </div>
+                    <div class="listing-field-label">
+                      <input [(ngModel)]="orderActionData.reviewType" type="radio" value="neutral"> Neutral
+                    </div>
+                    <div class="listing-field-label">
+                      <input [(ngModel)]="orderActionData.reviewType" type="radio" value="positive"><span class="positive" style="margin-left: .5rem;">Positive</span>
+                    </div>
+                  </div>
+
+                  <div class="field-container">
+                    <div class="label">
+                      Review Text
+                      <span (mouseenter)="showReviewText = true" (mouseleave)="showReviewText = false" class="info-tooltip">
+                        (?)
+                        <div *ngIf="showReviewText" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                          After you have received your order you are required to post a review. In general, you should only
+                          post a negative review if you have tried and failed to resolve your issue by messaging the merchant
+                          first. Negative reviews have a big impact on a merchant's score, so please be thoughtful and understand that
+                          the person on the other side is just another human being trying to make ends meet. If you are in doubt,
+                          leave a neutral review. Once you have
+                          finished with your review you can submit it by hitting the "Review" button below.
+                        </div>
+                      </span>:
+                    </div>
+                    <div class="value">
+                      <textarea class="input" style="width: 35rem;" placeholder="Please provide any useful detail on your experience" [(ngModel)]="orderActionData.reviewText"></textarea>
+                    </div>
+                  </div>
+                  
+                </div>
+
+                <!--Fee rate configuration-->
+                <div *ngIf="showFeeRateInput === orderIndex" class="field-container" style="margin-bottom: .5rem;">
+                  <div class="label">
+                    Network Transaction Fee Rate (in Ultra per KiloByte)
+                    <span (mouseenter)="showOrderFeeRateTooltip = true" (mouseleave)="showOrderFeeRateTooltip = false" class="info-tooltip">
+                      (?)
+                      <div *ngIf="showOrderFeeRateTooltip" class="info-tooltip-contents" style="width: 35rem; bottom: 0; top: auto;">
+                        Because the Ultranet is fully decentralized, transactions usually require a small transaction fee to
+                        incentivize miners to process them in a timely manner (same as with Bitcoin). A transaction is
+                        typically evaluated based on its "fee rate," which is the amount of Ultra it pays per kilobyte
+                        of data it contains. The fee rate being used as the default here is based on the median of the
+                        transaction fees set in the previous Ultra block, but you
+                        can increase it if you want your transaction to process (aka "confirm") more quickly or decrease
+                        it if you don't care when your transaction confirms. Just be careful not to set it too low or
+                        else your transaction will be stuck in limbo for a long time. <em>If you don't know what you're doing,
+                          stick with the default.</em> If you set it to a weird fee rate value and want to go back to the default, simply
+                        hit "Reset Fee Rate" on the right. Most transactions are under a kilobyte and so the "total fee" for your order
+                        placement should not exceed the "fee rate" specified in this field by much, if at all.
+                        <br>
+                        <br>
+                        Note that this is the "fee rate" not the final fee you are paying. <em>You will be asked to confirm the final fee
+                          once you choose an action to take on the order.</em>
+                      </div>
+                    </span>:
+                  </div>
+                  <div class="value">
+                    <input [(ngModel)]="orderActionData.feeRateUltraPerKB" type="number"/>
+                    <span style="margin-left: .5rem;">(= ~{{appData.nanosToUSD(orderActionData.feeRateUltraPerKB * 1e9)}} USD/KB)</span>
+
+                    <div (click)="_clickResetFeeRate()" class="btn btn-light" style="margin-left: .5rem;">
+                      <div class="divtext" style="font-weight: bold;">
+                        Reset Fee Rate
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
+                <!--Action buttons container-->
+                <div>
+                  <!--Cancel Order-->
+                  <div *ngIf="_hasAction(order.PossibleActions, 'cancel')" style="display: inline-block; margin-right: .5rem;">
+                    <div class="btn btn-light"  (click)="_clickOrderAction(order, 'cancel')">
+                      <div class="divtext">
+                        Cancel Order
+                      </div>
+                    </div>
+                  </div>
+                  <!--Review Order-->
+                  <div *ngIf="_hasAction(order.PossibleActions, 'review')" style="display: inline-block; margin-right: .5rem;">
+                    <div class="btn btn-light"  (click)="_clickOrderAction(order, 'review')">
+                      <div class="divtext">
+                        Review
+                      </div>
+                    </div>
+                  </div>
+                  <!--Confirm Order-->
+                  <div *ngIf="_hasAction(order.PossibleActions, 'confirm')" style="display: inline-block; margin-right: .5rem;">
+                    <div class="btn btn-light"  (click)="_clickOrderAction(order, 'confirm')">
+                      <div class="divtext">
+                        Confirm Order
+                      </div>
+                    </div>
+                  </div>
+                  <!--Reject Order-->
+                  <div *ngIf="_hasAction(order.PossibleActions, 'reject')" style="display: inline-block; margin-right: .5rem;">
+                    <div class="btn btn-light"  (click)="_clickOrderAction(order, 'reject')">
+                      <div class="divtext">
+                        Reject Order
+                      </div>
+                    </div>
+                  </div>
+
+                  <!--Request Refund-->
+                  <!--<div *ngIf="_hasAction(order.PossibleActions, 'request_refund')" style="display: inline-block; margin-right: .5rem;">-->
+                    <!--<div class="btn btn-light"  (click)="_clickOrderAction(order, 'request_refund')">-->
+                      <!--<div class="divtext">-->
+                        <!--Request Refund-->
+                      <!--</div>-->
+                    <!--</div>-->
+                  <!--</div>-->
+
+                  <!--Fulfill Order-->
+                  <div *ngIf="_hasAction(order.PossibleActions, 'fulfill_order')" style="display: inline-block; margin-right: .5rem;">
+                    <div class="btn btn-light"  (click)="_clickOrderAction(order, 'fulfill_order')">
+                      <div class="divtext">
+                        Mark Fulfilled
+                      </div>
+                    </div>
+                  </div>
+
+                  <!--Edit Review-->
+                  <div *ngIf="_hasAction(order.PossibleActions, 'edit_review')" style="display: inline-block; margin-right: .5rem;">
+                    <div class="btn btn-light"  (click)="_clickOrderAction(order, 'review')">
+                      <div class="divtext">
+                        Edit Review
+                      </div>
+                    </div>
+                  </div>
+                  <!--Refund Order-->
+                  <div *ngIf="_hasAction(order.PossibleActions, 'refund_order')" style="display: inline-block; margin-right: .5rem;">
+                    <div class="btn btn-light"  (click)="_clickOrderAction(order, 'refund_order')">
+                      <div class="divtext">
+                        Refund Order
+                      </div>
+                    </div>
+                  </div>
+
+                  <!--Whether to show the fee rate adjuster-->
+                  <div *ngIf="order.PossibleActions !== 0 && order.PossibleActions.length > 0" style="display: inline-block; margin-right: .5rem;">
+                    <div *ngIf="showFeeRateInput !== orderIndex" class="btn btn-light"  (click)="showFeeRateInput = orderIndex">
+                      <div class="divtext">
+                        Show Advanced Fee Options
+                      </div>
+                    </div>
+                    <div *ngIf="showFeeRateInput === orderIndex" class="btn btn-light"  (click)="showFeeRateInput = -1">
+                      <div class="divtext">
+                        Hide Advanced Fee Options
+                      </div>
+                    </div>
+                  </div>
+
+                  <!--What to show if there are no actions-->
+                  <div *ngIf="order.PossibleActions == null || order.PossibleActions.length === 0">
+                    <div class="subcontent-text" style="font-weight: normal;">
+                      No actions for this order
+                    </div>
+                  </div>
+                </div>
+ 
+              </div>
+
+            </div>
+          </div>
+
+          <!--Just a tiny bit of padding on each order entry-->
+          <div style="height: .5rem;"></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!--Listings tab content (tab can only be selected if the user is a merchant)-->
+    <div *ngIf="appData.dashboardPageState.selectedPage === DashboardPage.Listings">
+      <div *ngIf="appData.dashboardPageState.listingSelected == null">
+
+        <!--Only show the listing content if there are listings to show.-->
+        <div *ngIf="appData.loggedInUser.Listings.length === 0" class="no-listings">
+          You have no listings currently but you can easily create one now. The notification badge will disappear after you create your first listing.
+        </div>
+
+        <!--Link to create a listing-->
+        <div>
+          <div (click)="_clickCreateListing()" class="btn btn-light" style="margin-top: .5rem;">
+            <div class="divtext">
+              Create a Listing
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="appData.loggedInUser.Listings.length > 0">
+          <!--Title-->
+          <div class="manage-listings-title">
+            Listings 
+          </div>
+
+          <!--Table header-->
+          <div class="manage-listings-heading">
+            <div class="listing-entry-heading" style="width: 20rem">
+              Title
+            </div>
+            <div class="listing-entry-heading" style="width: 12rem">
+              Price per Unit (Ultra)
+            </div>
+            <div class="listing-entry-heading" style="width: 12rem">
+              Category 
+            </div>
+          </div>
+          <!--Table content-->
+          <div *ngFor="let listing of appData.loggedInUser.Listings; index as listingIndex" class="manage-listings-value">
+            <!--Listing fields-->
+            <div class="listing-entry-value" style="width: 20rem">
+              {{listing.Title}}
+            </div>
+            <div class="listing-entry-value" style="width: 12rem">
+              {{(listing.PricePerUnitNanos / 1e9).toFixed(9)}}
+            </div>
+            <div class="listing-entry-value" style="width: 17rem">
+              {{listing.Category}}
+            </div>
+            <!--Buttons to view or modify listing-->
+            <div (click)="_clickViewOrEditListing(listingIndex)" class="btn btn-light">
+              <div class="divtext">
+                View/Edit/Delete
+              </div>
+            </div>
+          </div>
+        </div>
+         
+      </div>
+
+      <!--Page for creating or editing a listing-->
+      <div *ngIf="appData.dashboardPageState.listingSelected != null">
+        <!--Buttons at the top-->
+        <div class="top-button-container">
+          <div (click)="_backFromListingCreationPage()" class="btn btn-light">
+            <div class="divtext">
+              Back
+            </div>
+          </div>
+        </div>
+        <div class="manage-listings-title" style="text-decoration: none;">
+          * = required field 
+        </div>
+
+        <!--The images UI-->
+        <div class="listing-field-images-title">
+          Listing Images*
+        </div>
+        <div *ngIf="appData.dashboardPageState.draftImages == null || appData.dashboardPageState.draftImages.length === 0" class="listing-field-images-container">
+          No images yet. Upload jpeg, png, or gif. Images will be automatically resized to
+          fit within a 500x500 square jpeg while maintaining aspect ratio. A 200x200
+          thumbnail will also be generated from an image of your choosing.
+        </div>
+        <div *ngIf="appData.dashboardPageState.draftImages != null && appData.dashboardPageState.draftImages.length > 0" class="listing-field-images-container">
+          <!--Thumbnail image header-->
+          <div class="listing-field-label" style="display: block;">
+            Thumbnail Image
+          </div>
+          <div style="margin-bottom: 1rem;">
+            This is actually how your thumbnail will look. Note that it will look better if you
+            use an approximately square image.
+          </div>
+          <!--Thumbnail image preview-->
+          <div class="listing-thumbnail" [style.background-image]="'url(' + thumbnailUrl + ')'">
+          </div>
+          <!--Listing images header-->
+          <div class="listing-field-label" style="display: block;">
+            Listing Images
+          </div>
+          <div style="margin-bottom: 1rem;">
+            Upload and reorder images below. What you see below is a preview to help organize
+            but users will be able to see full 500x500 images properly-sized with accurate
+            aspect ratio when they click on a listing.
+          </div>
+          <!--Thumbnail image preview-->
+          <div *ngFor="let draftImage of appData.dashboardPageState.draftImages; index as draftImageIndex" class="listing-images-container">
+            <div class="listing-image" [style.background-image]="'url(' + draftImage.url + ')'">
+              <div (click)="_deleteImage(draftImageIndex)" class="delete">
+                x
+              </div>
+            </div>
+            <div class="listing-image-controller">
+              <div (click)="_moveImageLeft(draftImageIndex)" class="btn btn-light">
+                <div class="divtext">
+                  <
+                </div>
+              </div>
+              <div (click)="_makeThumbnail(draftImageIndex)" class="btn btn-light">
+                <div class="divtext">
+                  Make Thumbnail
+                </div>
+              </div>
+              <div (click)="_moveImageRight(draftImageIndex)" class="btn btn-light">
+                <div class="divtext">
+                  >
+                </div>
+              </div> 
+            </div>
+          </div>
+        </div>
+
+        <div style="position: relative;">
+          <input 
+            class="file-upload-button"
+            type="file"
+            id="file"
+            (change)="handleFileInput($event.target.files)"
+            [(ngModel)]="fileInputVal"
+            style="position: absolute; left: 0; top: 0; bottom: 0; opacity: 0; cursor: pointer; width: 8rem;">
+          <div class="btn btn-light" style="cursor: pointer;">
+            <div class="divtext" style="cursor: pointer;">
+              Upload Image
+            </div>
+          </div>
+        </div>
+
+        <!--Title-->
+        <div class="listing-field-title">
+          <div class="listing-field-label">
+            Title*
+          </div>
+          <input placeholder="Make it good."
+            maxlength=240
+            [(ngModel)]="appData.dashboardPageState.listingSelected.Title"/>    
+        </div>
+        <!--Description-->
+        <div class="listing-field-description">
+          <div class="listing-field-label">
+            Description*
+          </div>
+          <textarea
+            rows="8" maxlength=1000
+            placeholder="Explain the product and anything the user should know. Make sure you take special care to disclose anything that might surprise the user about the ordering experience, as this will significantly improve your chances of getting a good rating."
+            [(ngModel)]="appData.dashboardPageState.listingSelected.Body"></textarea>
+        </div>
+        <!--Category-->
+        <div class="listing-field-title category-field-container">
+          <div class="listing-field-label">
+            Category*
+            <span (mouseenter)="showCategoryTooltip = true" (mouseleave)="showCategoryTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showCategoryTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                Every listing gets to have exactly one category that it's assigned to. This allows for similar listings
+                to be grouped together organically on the front page in the "Top Categories" section, making it easier
+                for users to find what they're looking for. Although you can create your own category here, we highly
+                recommend choosing a pre-existing category if you can, ideally with as many other listings in it as
+                possible. Doing this will result in more traffic to your listing as users typically use the top categories
+                to browse listings and being in a category with more listings makes it rank higher, thus making it more
+                likely to get clicked by the user. All of the above being said, if there really is no existing category
+                that makes sense for your listing, it is better to create a new category than it is to stuff listings
+                into irrelevant categories.
+              </div>
+            </span>
+          </div>
+          <div class="category-input-container">
+            <!--TODO: This is buggy right now. If your node is slow the user can notice the lag in the-->
+            <!--dropdown and when you go to click to create a category it breaks sometimes. It's still-->
+            <!--workable in all cases, it just looks bad.-->
+            <input
+              maxlength=30
+              placeholder="Try to bias toward picking an existing relevant category over creating a new one."
+              [(ngModel)]="appData.dashboardPageState.listingSelected.Category" 
+              (ngModelChange)="_categoryChanged($event)"
+              (blur)="this.showCategoryCompletion = false"
+              (focus)="_categoryChanged(appData.dashboardPageState.listingSelected.Category)" />
+            <div *ngIf="showCategoryCompletion" class="completion-container">
+              <div *ngFor="let topCategory of topCategoryCompletion; index as topCategoryIndex" 
+                  (mousedown)="appData.dashboardPageState.listingSelected.Category = topCategory.Category"
+                  class="completion-row"> 
+                {{topCategory.Category}} ({{topCategory.Count != -1 ? topCategory.Count : 'create new'}})
+              </div>
+            </div> 
+          </div>
+        </div>
+        <!--Price per unit-->
+        <div class="listing-field-price">
+          <div class="listing-field-label">
+            Price per Unit (in Ultra)*
+            <span (mouseenter)="showPricePerUnitTooltip = true" (mouseleave)="showPricePerUnitTooltip = false" class="info-tooltip" style="z-index: 0;">
+              (?)
+              <div *ngIf="showPricePerUnitTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                Set a price for your listing. The price you set here is how much Ultra you will receive per unit a
+                buyer orders from you. Note that the price the buyer sees may be slightly higher than this since the
+                price the buyer pays must include commissions.
+              </div>
+            </span>
+          </div>
+          <input [(ngModel)]="pricePerUnitUltra" (ngModelChange)="_updatePricePerUnitNanos($event)" placeholder="10" type="number" style="margin-right: .5rem;"/>
+          <div class="listing-field-label">
+            <!--TODO: We should have a USD price here.-->
+          </div>
+        </div>
+        <!--Unit singular-->
+        <div class="listing-field-units">
+          <div class="listing-field-label">
+            Unit Name (Singular)*
+          </div>
+          <input
+            maxlength=20
+            [(ngModel)]="appData.dashboardPageState.listingSelected.UnitNameSingular" placeholder="slinky" style="margin-right: .5rem;"/>
+        </div>
+        <!--Unit plural-->
+        <div class="listing-field-units">
+          <div class="listing-field-label">
+            Unit Name (Plural)*
+          </div>
+          <input
+            maxlength=20
+            [(ngModel)]="appData.dashboardPageState.listingSelected.UnitNamePlural" placeholder="slinkies" style="margin-right: .5rem;"/>
+        </div>
+        <!--Min quantity-->
+        <div class="listing-field-quantity">
+          <div class="listing-field-label">
+            Min Quantity per Order
+            <span (mouseenter)="showMinQuantityTooltip = true" (mouseleave)="showMinQuantityTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showMinQuantityTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                This is the minimum quantity a user is allowed to place an order with. Set this to zero to have no minimum quantity.
+              </div>
+            </span>
+          </div>
+          <input [(ngModel)]="appData.dashboardPageState.listingSelected.MinQuantity" type="number" style="margin-right: .5rem;"/>
+        </div>
+        <!--Max quantity-->
+        <div class="listing-field-quantity">
+          <div class="listing-field-label">
+            Max Quantity per Order
+            <span (mouseenter)="showMaxQuantityTooltip = true" (mouseleave)="showMaxQuantityTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showMaxQuantityTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                This is the maximum quantity a user is allowed to place an order with. Set this to zero to have no maximum quantity.
+              </div>
+            </span>
+          </div>
+          <input [(ngModel)]="appData.dashboardPageState.listingSelected.MaxQuantity" type="number" style="margin-right: .5rem;"/>
+          <div class="listing-field-label">
+            (0 = no limit)
+          </div>
+        </div>
+        <!--Product type-->
+        <div class="listing-field-product-type">
+          <div class="listing-field-label">
+            Product Type*
+            <span (mouseenter)="showProductTypeTooltip = true" (mouseleave)="showProductTypeTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showProductTypeTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                Instant products are generally things you can give to the buyer
+                very soon after they place an order like
+                a link to some digital content, for example. For instant products, be sure to provide
+                instructions in your description for how the user is to obtain the product after purchase. Common
+                methods are messaging the user instructions after purchase over encrypted
+                chat through this platform or collecting their email or an alternative chat
+                handle via required fields and sending a link to them that way.
+                <br> 
+                <br> 
+                Delivered products are products that
+                require shipping. If you use this product type, be sure to include a required field
+                that asks for their shipping address.
+                <br>
+                <br>
+                Soon we will have a "local service" product type with a map view that allows users to
+                find what they're looking for in a location-centric way.
+              </div>
+            </span>
+          </div>
+          <div class="listing-field-label">
+            <input [(ngModel)]="appData.dashboardPageState.listingSelected.ProductType" type="radio" value="instant"> Instant/Digital
+          </div>
+          <div class="listing-field-label">
+            <input [(ngModel)]="appData.dashboardPageState.listingSelected.ProductType" type="radio" value="delivered"> Delivered
+          </div>
+          <div class="listing-field-label" style="text-align: center;">
+            Local Service<br>(Coming Soon)
+          </div>
+        </div>
+        <!--Ships to (conditional on product type)-->
+        <div *ngIf="appData.dashboardPageState.listingSelected.ProductType === 'delivered'" class="listing-field-ships-to">
+          <div class="listing-field-label">
+            Ships To
+            <span (mouseenter)="showShipsToTooltip = true" (mouseleave)="showShipsToTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showShipsToTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                This field is optional. Leave it blank if you can ship anywhere or prefer not to disclose where you can
+                ship to. Note you can always reject an order if you realize there's no way you can fulfill it after a user
+                places it and gives you their information. Doing this is bad for your merchant score, however, and so it is
+                ideal if you can give the user everything she needs up-front.
+              </div>
+            </span>
+          </div>
+          <input
+            maxlength=240
+            [(ngModel)]="appData.dashboardPageState.listingSelected.ShipsTo" type="text" placeholder="Leave blank if you can ship anywhere." style="margin-right: .5rem;"/>
+        </div>
+        <div *ngIf="appData.dashboardPageState.listingSelected.ProductType === 'delivered'" class="listing-field-ships-to">
+          <div class="listing-field-label">
+            Ships From
+            <span (mouseenter)="showShipsFromTooltip = true" (mouseleave)="showShipsFromTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showShipsFromTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                This field is optional. Leave it blank if you prefer not to disclose.
+              </div>
+            </span>
+          </div>
+          <input
+            maxlength=240
+            [(ngModel)]="appData.dashboardPageState.listingSelected.ShipsFrom" type="text" placeholder="Leave blank to keep this private." style="margin-right: .5rem;"/>
+        </div>
+        <div *ngIf="appData.dashboardPageState.listingSelected.ProductType === 'instant'" class="instant-instructions">
+          For instant products, be sure to provide instructions in your description
+          for how the user is to obtain the product after purchase. Common
+          methods are messaging the user instructions after purchase over encrypted
+          chat through this platform or collecting their email or an alternative chat
+          handle via required fields and sending a link to them that way.
+          <br>
+          Soon we will make it so that instant products are delivered automatically
+          when you confirm, but for now this is the most secure way to do this.
+        </div>
+
+        <!--Required fields heading-->
+        <div class="listing-field-label" style="font-weight: bold;">
+          Required Fields
+          <span (mouseenter)="showRequiredFieldsTooltip = true" (mouseleave)="showRequiredFieldsTooltip = false" class="info-tooltip">
+            (?)
+            <div *ngIf="showRequiredFieldsTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+              Required fields are fields the buyer is required to provide information for prior
+              to placing an order. Shipping address is a common required field.
+            </div>
+          </span>
+        </div>
+        <!--Repeated required fields that are currently set-->
+        <div style="padding-left: 2rem;">
+          <div *ngFor="let field of appData.dashboardPageState.listingSelected.RequiredFields; index as fieldIndex" class="extra-field-container">
+            <div class="listing-field-label">
+              Field #{{fieldIndex+1}}
+            </div>
+            <div class="listing-field-label extra-field">
+              {{field}}
+            </div>
+            <div (click)="_removeRequiredField(fieldIndex)" class="btn btn-light">
+              <div class="divtext">
+                Remove
+              </div>
+            </div>
+          </div>
+          <!--Line for adding new extra fields-->
+          <div class="listing-field-extra">
+            <div class="listing-field-label">
+              Add Required Field
+            </div>
+            <textarea
+              rows="3" maxlength=350
+              placeholder="Use this to add labels for extra *required* input fields the buyer will be asked to enter info for." type="text"
+              style="margin-right: .5rem;" [(ngModel)]="requiredFieldText"></textarea>
+            <div (click)="_addRequiredField()" class="btn btn-light">
+              <div class="divtext">
+                Add Field
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!--Optional fields heading-->
+        <div class="listing-field-label" style="font-weight: bold;">
+          Optional Fields
+          <span (mouseenter)="showOptionalFieldsTooltip = true" (mouseleave)="showOptionalFieldsTooltip = false" class="info-tooltip">
+            (?)
+            <div *ngIf="showOptionalFieldsTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+              Optional fields are fields the buyer is *not* required to provide information for prior
+              to placing an order. Asking for "extra comments" from the buyer is something merchants
+              commonly use an optional field for.
+            </div>
+          </span>
+        </div>
+        <!--Repeated optional fields that are currently set-->
+        <div style="padding-left: 2rem;">
+          <div *ngFor="let field of appData.dashboardPageState.listingSelected.OptionalFields; index as fieldIndex" class="extra-field-container">
+            <div class="listing-field-label">
+              Field #{{fieldIndex+1}}
+            </div>
+            <div class="listing-field-label extra-field">
+              {{field}}
+            </div>
+            <div (click)="_removeOptionalField(fieldIndex)" class="btn btn-light">
+              <div class="divtext">
+                Remove
+              </div>
+            </div>
+          </div>
+          <!--Line for adding new extra fields-->
+          <div class="listing-field-extra">
+            <div class="listing-field-label">
+              Add Optional Field
+            </div>
+            <textarea
+              rows="3" maxlength=350
+              placeholder="Use this to add labels for extra *optional* input fields the buyer will be asked to enter info for." type="text"
+              style="margin-right: .5rem;" [(ngModel)]="optionalFieldText"></textarea>
+            <div (click)="_addOptionalField()" class="btn btn-light">
+              <div class="divtext">
+                Add Field
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!--Tip comment field-->
+        <div class="listing-field-title">
+          <div class="listing-field-label">
+            Tip Comment
+            <span (mouseenter)="showTipCommentTooltip = true" (mouseleave)="showTipCommentTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showTipCommentTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                Merchants typically use this field to adjust for special circumstances that the buyer
+                is aware of prior to placing an order. For example, a merchant who ships internationally
+                could leave a tip comment that states, "if you reside in the UK please add an extra 3 
+                Ultra tip to adjust for increased shipping expense." Some merchants go so far as to include
+                a full schedule of shipping rates in their tip comment. We recommend strongly against this
+                however as buyers are generally happier when no adjustment is required for special circumstances.
+                The best merchants do their best to encapsulate all of the cost in the "Price per Unit" above
+                and avoid using this field.
+              </div>
+            </span>
+          </div>
+          <textarea
+            rows="2" maxlength=350
+            placeholder="Avoid using this field if possible"
+            [(ngModel)]="appData.dashboardPageState.listingSelected.TipComment"></textarea>
+        </div>
+ 
+        <div (click)="_publishListing()" class="btn btn-light" style="margin-top: 1rem;">
+          <div class="divtext">
+            Publish Listing
+          </div>
+        </div>
+        <div *ngIf="appData.dashboardPageState.listingSelected.ListingIndex != null && appData.dashboardPageState.listingSelected.ListingIndex >= 0"
+          (click)="_clickDeleteListing(appData.dashboardPageState.listingSelected)" class="btn btn-light no" style="margin-top: 1rem;">
+          <div class="divtext">
+            Delete Listing
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!--SendUltra page-->
+    <div *ngIf="appData.dashboardPageState.selectedPage === DashboardPage.SendUltra" class="order-container">
+      <div class="top-order-help-text" style="font-weight: normal;">
+        Use this page to make ad-hoc payments of Ultra to other users using their public key.
+      </div>
+      <div *ngIf="appData.loggedInUser.BalanceNanos == null || appData.loggedInUser.BalanceNanos === 0" class="top-order-help-text" style="font-weight: normal;">
+        You don’t have any Ultra yet. To buy some, head to the <div (click)="_clickGoToBuyUltra()" class="link">Buy Ultra page</div>.
+      </div>
+
+      <!--Pay to Public Key-->
+      <div class="field-container" style="margin-top: 1rem;">
+        <div class="label">
+          Pay to Public Key:
+        </div>
+        <div class="value">
+          <input class="input" style="width: 35rem;" placeholder="Enter a public key to send Ultra to." [(ngModel)]="sendUltraData.payToPublicKey"/>    
+        </div>
+      </div>
+
+      <!--Amount to Send-->
+      <div class="field-container">
+        <div class="label">
+          Amount to Send (in Ultra):
+        </div>
+        <div class="value">
+          <input class="input" type="number" style="width: 15rem;" placeholder="0" [(ngModel)]="sendUltraData.amountToSendUltra" style="margin-right: .25rem;"/>
+          Ultra (= ~{{appData.nanosToUSD(sendUltraData.amountToSendUltra*1e9)}} USD)
+        </div>
+        <div (click)="_clickMaxUltra()" class="btn btn-light">
+          <div class="divtext">
+            Max
+          </div>
+        </div>
+      </div>
+
+      <!--Total Fee-->
+      <div class="field-container">
+        <div class="label">
+          Total Network Fee (in Ultra):
+        </div>
+        <div class="value">
+          {{appData.nanosToUltra(sendUltraData.totalFeeUltra*1e9)}}
+          Ultra (= ~{{appData.nanosToUSD(sendUltraData.totalFeeUltra*1e9)}} USD)
+        </div>
+        <div class="btn btn-light" (click)="sendUltraData.showAdvancedFeeOptions = !sendUltraData.showAdvancedFeeOptions">
+          <div *ngIf="!sendUltraData.showAdvancedFeeOptions" class="divtext">
+            Show Advanced Fee Options
+          </div>
+          <div *ngIf="sendUltraData.showAdvancedFeeOptions" class="divtext">
+            Hide Advanced Fee Options
+          </div>
+        </div>
+      </div>
+
+      <!--Fee Rate-->
+      <div *ngIf="sendUltraData.showAdvancedFeeOptions" class="field-container" style="padding-left: 1.5rem;">
+        <div class="label">
+          Network Fee Rate (in Ultra per KiloByte):
+        </div>
+        <div class="value">
+          <input class="input" type="number" style="width: 15rem;" placeholder="0" [(ngModel)]="sendUltraData.feeRateUltraPerKB" style="margin-right: .25rem;"/>
+          Ultra per KB (= ~{{appData.nanosToUSD(sendUltraData.feeRateUltraPerKB*1e9)}} USD per KB)
+          <div (click)="_clickResetFeeRate()" class="btn btn-light" style="margin-left: .5rem;">
+            <div class="divtext">
+              Reset Fee Rate
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--Total Ultra-->
+      <div class="field-container">
+        <div class="label">
+          Total Ultra:
+        </div>
+        <div class="value">
+          <span *ngIf="sendUltraData.error == null || sendUltraData.error === ''">
+            {{appData.nanosToUltra((sendUltraData.amountToSendUltra + sendUltraData.totalFeeUltra)*1e9)}}
+            Ultra (= ~{{appData.nanosToUSD((sendUltraData.amountToSendUltra+sendUltraData.totalFeeUltra)*1e9)}} USD)
+          </span>
+          <span *ngIf="sendUltraData.error != null && sendUltraData.error !== ''" class="error">
+            {{appData.nanosToUltra(0)}}
+            Ultra (= ~{{appData.nanosToUSD(0)}} USD)
+          </span>
+          
+        </div>
+      </div>
+
+      <div *ngIf="sendUltraData.error != null && sendUltraData.error !== ''" class="error">
+        {{sendUltraData.error}} 
+      </div>
+
+      <div (click)="_clickSendUltra()" class="btn btn-light" style="margin-top: 1rem;">
+        <div class="divtext">
+          Send Ultra
+        </div>
+      </div>
+
+    </div>
+
+
+    <!--Signatures tab-->
+    <div *ngIf="appData.dashboardPageState.selectedPage === DashboardPage.Signatures" class="order-container">
+      <div class="top-order-help-text" style="font-weight: normal;">
+        <div>
+          Often, people use their public key to identify themselves on other platforms, such as forums or
+          even other marketplaces. This tab allows you to prove to someone outside the Ultra platform that
+          you own the private key associated with this user account.
+        </div>
+        <div style="margin-top: .5rem">
+          To use it, simply paste some text
+          that you would like to sign with your private key, copy the output signature below, and post it
+          or send it to whoever you want to prove your identity to. Anyone you send the text to can verify
+          that it was indeed signed by your private key by using the verification part of this tab.
+        </div>
+      </div>
+
+      <!--Sign message-->
+      <div class="title" style="margin-top: .5rem;">
+        Sign Message
+        <span (mouseenter)="signMessageTooltip = true" (mouseleave)="signMessageTooltip = false" class="info-tooltip">
+          (?)
+          <div *ngIf="signMessageTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+            To sign a message, simply enter it below and copy the signature text below. If you'd like to
+            expand the size of the text box you can drag it on the bottom right.
+          </div>
+        </span>:
+      </div>
+      <div style="margin-top: .5rem;">
+        <textarea class="input" style="width: 50rem;" rows=10 placeholder="Enter a message you'd like to sign" [(ngModel)]="signatureData.messageToSign"></textarea>
+      </div>
+      <div>
+        <div class="btn btn-light" (click)="appData._copyText(signatureData.signedMessage)">
+          <div class="divtext">
+            Copy Signature
+          </div>
+        </div>
+        <div style="margin-top: .5rem;">
+          <span class="signature-text" style="white-space: pre-wrap;">{{signatureData.signedMessage}}</span>
+          <span *ngIf="signatureData.error != null && signatureData.error !== ''" class="error">
+            {{signatureData.error}}
+          </span>
+        </div>
+      </div>
+
+      <!--Verify message-->
+      <div class="title" style="margin-top: .5rem;">
+        Verify Message
+        <span (mouseenter)="verifyMessageTooltip = true" (mouseleave)="verifyMessageTooltip = false" class="info-tooltip">
+          (?)
+          <div *ngIf="verifyMessageTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+            To verify a signed message, paste it below. The format for a signed message is: [message_text][newline][signature_hex][newline][public_key]. A signature being
+            valid means that the message_text was signed by the private key associated with the public_key
+            included at the end of the message. If you'd like to expand the size of the
+            text box you can drag it on the bottom right.
+          </div>
+        </span>:
+      </div>
+      <div style="margin-top: .5rem;">
+        <textarea (ngModelChange)="signatureData.isValidSignature = null" class="input" style="width: 50rem;" rows=10 placeholder="Enter a message you'd like to verify" [(ngModel)]="signatureData.messageToVerify"></textarea>
+      </div>
+      <div>
+        <div class="btn btn-light" (click)="_verifySignature()">
+          <div class="divtext">
+            Verify Signature
+          </div>
+        </div>
+        <div style="margin-top: .5rem; font-size: 1.25rem;">
+          <div *ngIf="signatureData.isValidSignature === true" class="positive">
+            This signature is valid 
+          </div>
+          <div *ngIf="signatureData.isValidSignature === false" class="error">
+            This signature is not valid 
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!--Transactions tab content-->
+    <div *ngIf="appData.dashboardPageState.selectedPage === DashboardPage.Transactions">
+      <!--Help text-->
+      <div class="top-order-help-text" style="font-weight: normal;">
+        This page displays your recent transactions. Right now, for various technical reasons,
+        we can only show transactions that you created on the "Send Ultra" page. We are working
+        on adding transactions from other sources, however.
+      </div>
+
+      <!--Recent Transactions-->
+      <div>
+        <div class="title" style="margin-top: 1rem; cursor: pointer;" (click)="transactionData.showRecentTransactions=!transactionData.showRecentTransactions">
+          <div *ngIf="transactionData.showRecentTransactions === true" class="minus">-</div>
+          <div *ngIf="transactionData.showRecentTransactions === false" class="minus">+</div>
+          Recent Transactions
+        </div>
+        <div *ngIf="transactionData.showRecentTransactions === true">
+          <div *ngIf="_numKeys(appData.loggedInUser.LocalState.OutgoingTransactions) === 0" class="top-order-help-text" style="font-weight: normal;" style="margin-top: 1rem;">
+            You have no transactions currently.
+          </div>
+          <div *ngIf="_numKeys(appData.loggedInUser.LocalState.OutgoingTransactions) !== 0" style="font-weight: normal;" style="margin-top: .5rem;" class="order-container">
+            <!--Transaction list-->
+            <div *ngFor="let txnInfo of appData.loggedInUser.LocalState.OutgoingTransactions | keyvalue; index as txnIndex">
+              <!--Transaction title-->
+              <div class="subtitle" style="text-decoration: none;">
+                Transaction #{{txnIndex+1}} 
+              </div>
+              <div style="margin-left: 1.5rem;">
+                <!--Transaction ID-->
+                <div class="field-container">
+                  <div class="label">
+                    Transaction ID
+                    <span (mouseenter)="showTransactionIDTooltip = txnIndex" (mouseleave)="showTransactionIDTooltip = -1" class="info-tooltip">
+                      (?)
+                      <div *ngIf="showTransactionIDTooltip === txnIndex" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                        Every transaction has a unique Transaction ID associated with it. The Transaction ID is a 32-byte SHA-256 hash of the
+                        transaction encoded using Base58Check encoding (the same encoding used on public keys).
+                      </div>
+                    </span>:
+                  </div>
+                  <div class="value">
+                    {{txnInfo.value.TxIDBase58Check}} 
+                    <div class="btn btn-light" (click)="appData._copyText(txnInfo.value.TxIDBase58Check)" style="margin-left: .5rem;">
+                      <div class="divtext">
+                        Copy
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!--Total Spent-->
+                <div class="field-container">
+                  <div class="label">
+                    Total Spent
+                    <span (mouseenter)="showTotalSpentTooltip = txnIndex" (mouseleave)="showTotalSpentTooltip = -1" class="info-tooltip">
+                      (?)
+                      <div *ngIf="showTotalSpentTooltip === txnIndex" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                        Note that for technical reasons a transaction contains three components: A spend amount which goes to the
+                        recipient, a fee which goes to the miners, and a change amount which gets sent back to the public key of
+                        the sender. In general, the change amount can be ignored by the average user and so we don't include it as
+                        part of the "Total Spent" here (although we do show it below for completeness).
+                      </div>
+                    </span>:
+                  </div>
+                  <div class="value">
+                    {{appData.nanosToUltra(txnInfo.value.SpendAmountNanos+txnInfo.value.FeeNanos)}} Ultra (= ~{{appData.nanosToUSD(txnInfo.value.SpendAmountNanos+txnInfo.value.FeeNanos)}} USD)
+                  </div>
+                </div>
+                <div style="padding-left: 1.5rem;">
+                  <!--Spend Amount-->
+                  <div class="field-container">
+                    <div class="label">
+                      Spend Amount:
+                    </div>
+                    <div class="value">
+                      {{appData.nanosToUltra(txnInfo.value.SpendAmountNanos)}} Ultra (= ~{{appData.nanosToUSD(txnInfo.value.SpendAmountNanos)}} USD)
+                    </div>
+                  </div>
+                  <!--FeeNanos-->
+                  <div class="field-container">
+                    <div class="label">
+                      Fee:
+                    </div>
+                    <div class="value">
+                      {{appData.nanosToUltra(txnInfo.value.FeeNanos)}} Ultra (= ~{{appData.nanosToUSD(txnInfo.value.FeeNanos)}} USD)
+                    </div>
+                  </div>
+                  <!--Change Amount-->
+                  <div class="field-container">
+                    <div class="label">
+                      Change:
+                    </div>
+                    <div class="value">
+                      {{appData.nanosToUltra(txnInfo.value.ChangeAmountNanos)}} Ultra (= ~{{appData.nanosToUSD(txnInfo.value.ChangeAmountNanos)}} USD)
+                    </div>
+                  </div>
+                </div>
+
+                <!--Recipients-->
+                <div class="field-container">
+                  <div class="label">
+                    Recipients:
+                  </div>
+                </div>
+                <div style="padding-left: 1.5rem;">
+                  <!--Single Recipient-->
+                  <div *ngFor="let recipientPublicKey of txnInfo.value.RecipientPublicKeys; index as recipientIndex">
+                    <div class="field-container">
+                      <div class="label">
+                        <div *ngIf="recipientPublicKey !== appData.loggedInUser.PublicKeyBase58Check">
+                          Recipient #{{recipientIndex+1}}:
+                        </div>
+                        <div *ngIf="recipientPublicKey === appData.loggedInUser.PublicKeyBase58Check">
+                          Change Output:
+                        </div>
+                      </div>
+                    </div>
+                    <div style="padding-left: 1.5rem;">
+                      <!--Recipient Public Key-->
+                      <div class="field-container">
+                        <div class="label">
+                          Public Key:
+                        </div>
+                        <div class="value">
+                          <div style="display: inline-block; width: 33.5rem;">
+                            {{recipientPublicKey}}
+                          </div>
+                          <div class="btn btn-light" (click)="appData._copyText(recipientPublicKey)" style="margin-left: .5rem;">
+                            <div class="divtext">
+                              Copy
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="field-container">
+                        <div class="label">
+                          Amount:
+                        </div>
+                        <div class="value">
+                          {{appData.nanosToUltra(txnInfo.value.RecipientAmountsNanos[recipientIndex])}} Ultra (= ~{{appData.nanosToUSD(txnInfo.value.RecipientAmountsNanos[recipientIndex])}} USD)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
+                <!--Transaction Hex-->
+                <div class="field-container" style="margin-top: 1rem;">
+                  <div class="label">
+                    Raw Transaction Hex
+                    <span (mouseenter)="showRawTransactionHexTooltip = txnIndex" (mouseleave)="showRawTransactionHexTooltip = -1" class="info-tooltip">
+                      (?)
+                      <div *ngIf="showRawTransactionHexTooltip === txnIndex" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                        This field is the raw transaction data serialized into bytes and encoded in hex. The average user does
+                        not need to worry about it, but we include it here for completeness.
+                      </div>
+                    </span>:
+                  </div>
+                  <div class="value">
+                    <div class="btn btn-light" (click)="appData._copyText(txnInfo.value.TransactionHex)">
+                      <div class="divtext">
+                        Copy Transaction Hex
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+      <!--Rebroadcast Bitcoin Block-->
+      <div class="title" style="margin-top: 1rem;">
+        Reprocess Bitcoin Block
+        <span (mouseenter)="showReprocessBitcoinBlockTooltip = true" (mouseleave)="showReprocessBitcoinBlockTooltip = false" class="info-tooltip">
+          (?)
+          <div *ngIf="showReprocessBitcoinBlockTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+            If you know a Bitcoin Burn transaction was mined into a particular Bitcoin block and yet you don’t see
+            the Ultra credited to your account, it is possible that the burn transaction was never picked up or broadcast
+            by an Ultra node. This should generally never happen since all Ultra nodes inspect all Bitcoin blocks for
+            any burn transactions (a pretty robust process) but we provide this reprocessing tool just in case.
+          </div>
+        </span>
+      </div>
+      <div class="order-container">   
+        <div class="field-container" style="margin-top: 1rem;">
+          <div class="label">
+            Bitcoin Block Hash or Block Height
+            <span (mouseenter)="showBitcoinBlockHashTooltip = true" (mouseleave)="showBitcoinBlockHashTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showBitcoinBlockHashTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                The hash of the block you would like to reprocess or the height of the block you would like to reprocess. Either
+                will work.
+              </div>
+            </span>:
+          </div>
+          <div class="value">
+            <input class="input" type="text" placeholder="Enter a Bitcoin block hash or block height." [(ngModel)]="transactionData.bitcoinBlockHashOrHeight" style="width: 38rem; margin-right: .25rem;"/>
+          </div>
+        </div>
+        <div class="btn btn-light" (click)="_reprocessBitcoinBlock()" style="margin-top: 1rem;">
+          <div class="divtext">
+            Reprocess Bitcoin Block
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+
+  <div style="margin-bottom: 40rem;"></div>
+</div>
+<!--Page where a listing can be created-->
+<div *ngIf="appData.dashboardPageState.selectedPage === DashboardPage.Listings">
+
+</div>
+<div>
+  
+</div>

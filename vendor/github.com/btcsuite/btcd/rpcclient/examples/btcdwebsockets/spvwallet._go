@@ -1,0 +1,32 @@
+package main
+
+import (
+	"time"
+
+	"github.com/OpenBazaar/spvwallet"
+	"github.com/OpenBazaar/spvwallet/db"
+	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/pkg/profile"
+)
+
+func main() {
+	// Create a new config
+	config := spvwallet.NewDefaultConfig()
+
+	// Select network
+	config.Params = &chaincfg.TestNet3Params
+
+	// Select wallet datastore
+	sqliteDatastore, _ := db.Create(config.RepoPath)
+	config.DB = sqliteDatastore
+
+	// Create the wallet
+	wallet, _ := spvwallet.NewSPVWallet(config)
+
+	defer profile.Start().Stop()
+
+	// Start it!
+	go wallet.Start()
+
+	time.Sleep(100000 * time.Second)
+}

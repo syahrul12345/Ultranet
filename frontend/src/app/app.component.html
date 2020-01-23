@@ -1,0 +1,127 @@
+<div class="app-container container-fluid">
+  <div *ngIf="appData.listingQueryNode == null && (appData.nodeInfo == null || appData.nodeInfo.UltraStatus == null || appData.nodeInfo.UltraStatus.State !== 'FULLY_CURRENT')" class="top-warning">
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1rem;">
+      Looking for a "Listing Query Node" to allow you to browse listings while your node syncs.
+    </div>
+  </div>
+  <div *ngIf="problemWithNodeConnection" class="top-warning">
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+      No connection to local node. Please either restart the app or set a valid local_node parameter in your URL.
+    </div>
+  </div>
+  <div *ngIf="appData.localNodeSecret == null || appData.localNodeSecret === ''" class="top-warning">
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+      You are using an empty shared_secret parameter. Please add a valid shared_secret to your URL.
+    </div>
+  </div>
+  <div class="top-nav-container">
+    <div class="left-top-tab-container">
+      <div class="logo"></div>
+      <div class="btn btn-light tab-button-market"
+          [ngClass]="{'selected': appData.selectedPage === PageType.Market}"
+          (click)="appData.selectedPage = PageType.Market">
+        <div class="divtext">
+          Marketplace
+        </div>
+      </div>
+      <div class="btn btn-light tab-button-dashboard"
+          [ngClass]="{'selected': appData.selectedPage === PageType.Dashboard}"
+          (click)="appData.selectedPage = PageType.Dashboard">
+        <div class="divtext">
+          Dashboard
+          <span *ngIf="appData != null && appData.loggedInUser != null && appData.loggedInUser.NumActionItems != null && appData.loggedInUser.NumActionItems !== 0" style="margin-left: .5rem;">
+            <div class="action-items-badge">
+              {{appData.loggedInUser.NumActionItems}}
+            </div>
+          </span>
+        </div>
+      </div>
+      <div class="btn btn-light tab-button-messages"
+          [ngClass]="{'selected': appData.selectedPage === PageType.Messages}"
+          (click)="appData.selectedPage = PageType.Messages">
+        <div class="divtext">
+          Messenger
+          <span *ngIf="appData != null && appData.loggedInUser != null && appData.loggedInUser.NumMessagesToRead != null && appData.loggedInUser.NumMessagesToRead !== 0" style="margin-left: .5rem;">
+            <div class="action-items-badge">
+              {{appData.loggedInUser.NumMessagesToRead}}
+            </div>
+          </span>
+        </div>
+      </div>
+      <div class="btn btn-light tab-button-buy-ultra"
+          [ngClass]="{'selected': appData.selectedPage === PageType.BuyUltra}"
+          (click)="appData.selectedPage = PageType.BuyUltra;">
+        <div class="divtext">
+          Buy Ultra
+          <span *ngIf="appData != null && appData.loggedInUser != null && appData.loggedInUser.BalanceNanos === 0" style="margin-left: .5rem;">
+            <div class="action-items-badge" style="width: 1.5rem;">
+              1
+            </div>
+          </span>
+        </div>
+      </div>
+      <div class="ultra-price-usd">
+        1 Ultra = ~{{ultraToUSDExchangeRateToDisplay}} USD
+      </div>
+    </div>
+    <div class="right-top-tab-container">
+      <div class="right-balance-helper">
+        <div *ngIf="appData.loggedInUser != null" style="display: inline-block; color: white; font-weight: bold;">
+          <div style="display: flex; align-items: center; height: 100%;">
+            <div>
+              <div>
+                Balance = {{appData.nanosToUltra(appData.loggedInUser.BalanceNanos)}} Ultra
+              </div>
+              <div>
+                (~{{appData.nanosToUSD(appData.loggedInUser.BalanceNanos)}} USD)
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="btn btn-light tab-button-account"
+            [ngClass]="{'selected': appData.selectedPage === PageType.Account}"
+            (click)="appData.selectedPage = PageType.Account">
+          <div class="divtext">
+            <div *ngIf="appData.loggedInUser == null" style="display: flex; align-items: center;">
+              <div style="width: 11rem;">
+                Create Account or Login
+              </div>
+              <span *ngIf="appData == null || appData.userList == null || appData.userList.length === 0">
+                <div class="action-items-badge" style="width: 1.5rem;">
+                  1
+                </div>
+              </span>
+            </div>
+            <div *ngIf="appData.loggedInUser != null">
+              {{appData.loggedInUser.Username.slice(0, 20)}}<span *ngIf="appData.loggedInUser.Username.length > 20">...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="separating-line">
+  </div>
+
+
+  <div class="page-market" *ngIf="appData.selectedPage === PageType.Market">
+    <app-market [appData]="appData"></app-market>
+  </div>
+  <div class="page-dashboard" *ngIf="appData.selectedPage === PageType.Dashboard">
+    <app-dashboard [appData]="appData"></app-dashboard>
+  </div>
+  <div class="page-messages" *ngIf="appData.selectedPage === PageType.Messages">
+    <app-messages [appData]="appData"></app-messages>
+  </div>
+  <div class="page-buy-ultra" *ngIf="appData.selectedPage === PageType.BuyUltra">
+    <app-buy-ultra [appData]="appData"></app-buy-ultra>
+  </div>
+
+  <div class="page-account" *ngIf="appData.selectedPage === PageType.Account">
+    <app-account [appData]="appData"></app-account>
+  </div>
+  <router-outlet></router-outlet>
+
+
+</div>

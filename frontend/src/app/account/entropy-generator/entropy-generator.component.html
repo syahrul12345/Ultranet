@@ -1,0 +1,136 @@
+<div class="help-text normal-text">
+  The Ultra wallet uses a <a class="link woohoo" href="https://en.bitcoin.it/wiki/Seed_phrase">seed phrase</a>,
+  shown below, like most Bitcoin wallets.
+  Your public and private keys are entirely derived from this seed phrase, and then
+  these keys are used to secure your account and sign transactions on the network.
+  For this reason, you will
+  always be able to recover your account as long as you have the seed phrase.
+  Also for this reason, losing your seed phrase could render your account
+  inaccessible if, for example, you install this software on another machine.
+  Just to reiterate: <div class="emph">You could lose access to your account and any
+  Ultra you've purchased if you lose your seed phrase.</div>
+  <div style="height: 1rem;">
+  </div>
+  The public and private keys generated from this seed phrase are effectively used
+  as your identity on the network. Any message you send will be end-to-end encrypted
+  using these keys. Any transaction you initiate will be signed by these keys.
+  So it's pretty important you not lose your seed phrase. <div class="emph">Write down your seed
+  phrase from below and keep it in a safe place.</div>
+</div>
+<div class="subtitle-container">
+  <div class="subtitle">
+    Seed Phrase (write this down)
+  </div>
+</div>
+<div class="seed-text">
+  {{temporaryEntropy?.value?.entropy != null ? temporaryEntropy?.value?.mnemonic : ''}} 
+</div>
+<div  *ngIf="temporaryEntropy?.value?.extraText != null && temporaryEntropy?.value?.extraText !== ''">
+  <div class="subtitle-container">
+    <div class="subtitle">
+      Extra Text (copy verbatim, including spaces)
+    </div>
+  </div>
+  <div class="seed-text extra-text">
+    {{temporaryEntropy?.value?.entropy != null ? temporaryEntropy?.value?.extraText: ''}} 
+  </div>
+</div>
+<div class="simple-advanced-container">
+  <div class="btn btn-light" [ngClass]="{'selected': isSimpleSelected}" (click)="simplePressed()">
+    <div class="divtext">
+      Simple
+    </div>
+  </div>
+  <div class="btn btn-light" [ngClass]="{'selected': !isSimpleSelected}" (click)="advancedPressed()">
+    <div class="divtext">
+      Advanced
+    </div>
+  </div>
+  <div class="btn btn-light" (click)="resetEntropy()">
+    <div class="divtext">
+      Regenerate 
+    </div>
+  </div>
+</div>
+<div *ngIf="!isSimpleSelected" class="advanced-seed-container">
+  <div class="help-text normal-text">
+    The following displays the entropy (random numbers) used to generate the seed phrase above.
+    The entropy below was generated using a random number generator, but you can edit the
+    fields below to use your own randomness to generate the seed phrase (you can't go wrong
+    with a set of dice). You can also enter
+    your own seed phrase directly if you prefer.
+    <div style="height: 1rem;">
+    </div>
+    Because there is a standard for generating seed phrases for Bitcoin (called <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">BIP39</a>),
+    and because we use this same standard to generate Ultranet seed phrases,
+    Ultranet seed phrases can also be used with any Bitcoin wallet that implements
+    this standard under the m/44'/0'/0'/0/0 derivation path (e.g. <a href="https://wallet.mycelium.com/">Mycelium</a>, <a href="https://electrum.org">Electrum</a>).
+    Similarly, any standard
+    Bitcoin seed phrase you have can also be used as an Ultranet seed phrase. Of course, all
+    of this can be verified using a tool like the <a href="https://iancoleman.io/bip39/">Ian Coleman mnemonic generator</a>
+    (must click "show entropy details") so you know this generator is doing what it says it is.
+  </div>
+  <div>
+    <div class="form-label">
+      Customze seed phrase (must be a <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">BIP39</a> mnemonic)
+    </div>
+    <div>
+      <textarea class="custom-entropy-mnemonic-input" type="text" [(ngModel)]="temporaryEntropy.value.mnemonic"
+          (ngModelChange)="mnemonicChanged($event)" cols=60 rows=5>
+      </textarea>
+    </div>
+    <div class="custom-entropy-mnemonic-message entropy-error">
+      {{temporaryEntropy.value.customMnemonicMessage}}
+    </div>
+  </div>
+  <div>
+    <div class="form-label">
+      Extra text (copy verbatim with your mnemonic including spaces and trailing spaces if you use this field)
+    </div>
+    <div>
+      <textarea class="custom-entropy-extratext-input" type="text" [(ngModel)]="temporaryEntropy.value.extraText"
+          (ngModelChange)="extraTextChanged($event)" cols=60 rows=5>
+      </textarea>
+    </div>
+  </div> 
+  <div>
+    <div class="form-label">
+      Custom Entropy (hex = base16 = [0-9a-f])
+    </div>
+    <div>
+      <textarea class="custom-entropy-hex-input"
+                type="text" [(ngModel)]="temporaryEntropy.value.customEntropyHex"
+                (ngModelChange)="customEntropyHexChanged($event)" cols=60 rows=5></textarea>
+    </div>
+    <div class="custom-entropy-hex-message entropy-error">
+      {{temporaryEntropy.value.customEntropyHexMessage}}
+    </div>
+  </div>
+  <div>
+    <div class="form-label">
+      Custom Entropy (decimal = base10 = [0-9])
+    </div>
+    <div>
+      <textarea class="custom-entropy-decimal-input" type="text" [(ngModel)]="temporaryEntropy.value.customEntropyDecimal"
+                (ngModelChange)="customEntropyDecimalChanged($event)" cols=60 rows=5>
+      </textarea>
+    </div>
+    <div class="custom-entropy-decimal-message entropy-error">
+      {{temporaryEntropy.value.customEntropyDecimalMessage}}
+    </div>
+  </div>
+  <div>
+    <div class="form-label">
+      Custom Entropy (dice = base6 = [1-6])
+      Roll some dice and enter the numbers
+    </div>
+    <div>
+      <textarea class="custom-entropy-dice-input" type="text" [(ngModel)]="temporaryEntropy.value.customEntropyDice"
+          (ngModelChange)="customEntropyDiceChanged($event)" cols=60 rows=5>
+      </textarea>
+    </div>
+    <div class="custom-entropy-dice-message entropy-error">
+      {{temporaryEntropy.value.customEntropyDiceMessage}}
+    </div>
+  </div>
+</div>

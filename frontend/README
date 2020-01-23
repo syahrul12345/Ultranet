@@ -1,0 +1,10 @@
+To test the frontend with a fast development, the following works well:
+* Run ng serve from this directory. It will open a browser but close that for
+  now.
+  * $ ng server --poll 2000
+* Run a backend using one of the scripts in ../backend/scripts/test_nodes. It
+  will open a browser pointing at the frontend.
+* Change the host in the browser URL opened in the previous step from whatever
+  it is by default to localhost:4200.
+  * When you do this, you will be loading a dynamically-compiling frontend with
+    autoreload BUT your queries will hit the node you just spun up.

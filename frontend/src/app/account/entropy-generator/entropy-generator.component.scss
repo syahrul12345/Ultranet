@@ -1,0 +1,44 @@
+/* EntropyGeneratorComponent's private CSS styles */
+
+@import '../../../variables.scss';
+
+a {
+    color: #ffffff;
+    text-decoration: underline;
+}
+.emph {
+  color: #ffffff;
+}
+.help-text {
+  margin-top: 1rem;
+}
+.subtitle {
+  margin-top: 1rem;
+}
+.seed-text {
+  color: $important-text-color;
+  font-weight: bold;
+  margin-top: .5rem;
+  font-size: 1.5rem;
+}
+.extra-text {
+  white-space: pre-wrap;
+}
+.simple-advanced-container {
+  margin-top: 1rem;
+
+  .btn {
+    margin-right: 1rem;
+  }
+}
+.advanced-seed-container {
+  .form-label {
+    margin-top: 1rem;
+    color: $light-hover-color;
+    margin-bottom: .5rem;
+    font-size: 1.2rem;
+  }
+}
+.entropy-error {
+  color: $error-color;
+}

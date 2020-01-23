@@ -1,0 +1,249 @@
+<div class="market-left-container">
+  <div class="market-widget-container">
+    <div class="market-widget-heading" style="display: block; text-align: left;">
+      Contacts
+      <span (mouseenter)="showContactsTooltip = true" (mouseleave)="showContactsTooltip = false" class="info-tooltip">
+        (?)
+        <div *ngIf="showContactsTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+          This is a list of all the users that you have messaged in the past or who have messaged you.
+          The users are identified by their public keys unless you have applied a "nickname" to them
+          or they are a merchant, in which case they have a globally-unique username.
+          The users are ordered by who you interacted with most recently, but you can also
+          filter users using the search box below after you login. To start a new conversation
+          simply enter the user's public key and click "Start Conversation" below.
+        </div>
+      </span>
+    </div>
+
+    <div *ngIf="appData == null || appData.loggedInUser == null" class="market-widget-info">
+      <div style="margin-top: .5rem;">
+        Your contacts will populate after you <div (click)="_clickCreateAccountOrLogin()" class="link">create an account or login</div>. 
+      </div>
+    </div>
+
+    <div *ngIf="appData != null && appData.loggedInUser != null" class="market-widget-info">
+      Public Key:
+      <input [(ngModel)]="newContactPublicKey" style="width: 100%; margin-top: .5rem; height: 2.5rem;"
+          placeholder="Enter a user's public key to start a conversation" type="text" value="" name="" id=""/>
+      <div (click)="_startNewConversation(newContactPublicKey)" class="btn btn-light" style="margin-top: .5rem;">
+        <div class="divtext">
+          Start Conversation
+        </div>
+      </div>
+
+      <div style="margin-top: .5rem;">
+        Filter Contacts:
+      </div>
+      <input [(ngModel)]="contactFilter" style="width: 100%; margin-top: .5rem; height: 2.5rem;" placeholder="Filter contacts by public key or nickname" type="text" value="" name="" id=""/>
+
+      <div *ngIf="appData.loggedInUser.LocalState == null || appData.loggedInUser.LocalState.OrderedContactsWithMessages == null || appData.loggedInUser.LocalState.OrderedContactsWithMessages.length === 0"
+        class="market-widget-ranking-container" style="margin-top: 1rem;">
+        You don't have any contacts currently. To start a conversation, enter a user's public key above and hit "Start Conversation." 
+      </div>
+
+      <div *ngIf="appData.loggedInUser.LocalState != null && appData.loggedInUser.LocalState.OrderedContactsWithMessages != null && appData.loggedInUser.LocalState.OrderedContactsWithMessages.length !== 0"
+        class="market-widget-ranking-container">
+
+        <div *ngFor="let contactObj of appData.loggedInUser.LocalState.OrderedContactsWithMessages; index as contactIndex" class="market-widget-ranking" style="margin-top: .5rem;">
+
+          <div *ngIf="contactFilter == null || contactFilter === '' || (contactObj.PublicKeyBase58Check.toLowerCase().includes(contactFilter.toLowerCase())) || (contactObj.Nickname != null && contactObj.Nickname.toLowerCase().includes(contactFilter.toLowerCase()))">
+
+            <!--Badge for the selected contact if there is one.-->
+            <div *ngIf="currentContactObj != null && currentContactObj.PublicKeyBase58Check === contactObj.PublicKeyBase58Check" class="selected-contact">
+              -->
+            </div>
+
+            <div *ngIf="contactObj.Nickname == null || contactObj.Nickname === ''" style="display: inline-block; width: 15rem;">
+              <div (click)="_startNewConversation(contactObj.PublicKeyBase58Check)">
+                {{contactObj.PublicKeyBase58Check.slice(0, 20)}}...
+              </div> 
+            </div>
+            <div (click)="_startNewConversation(contactObj.PublicKeyBase58Check)" *ngIf="contactObj.Nickname != null && contactObj.Nickname !== ''" style="display: inline-block; width: 15rem;">
+              {{contactObj.Nickname.slice(0, 20)}}<span *ngIf="contactObj.Nickname.length > 20"></span>
+            </div>
+            
+            <div *ngIf="contactObj.Messages.length - contactObj.NumMessagesRead > 0" class="action-items-badge" style="width: auto; display: inline-block;">
+              {{contactObj.Messages.length - contactObj.NumMessagesRead}}
+            </div>
+
+            <div class="btn btn-light" (click)="appData._copyText(contactObj.PublicKeyBase58Check)" style="margin-left: .5rem; height: 1.5rem;">
+              <div class="divtext">
+                Copy
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="market-middle-container">
+  <!--No logged-in user-->
+  <div *ngIf="appData == null || appData.loggedInUser == null" class="help-text" style="text-align: center;">
+    Welcome to the Ultranet Messenger
+    <br>
+    <br>
+    The Ultranet Messenger is a completely decentralized end-to-end encrypted messaging platform. Messages are broadcast to peer nodes as transactions that are 
+    relayed and mined into blocks just like payment transactions (and in the same way that Bitcoin transactions are processed on
+    the Bitcoin blockchain).
+    <br>
+    <br>
+    There is no centralized server to coordinate messages between peers and no centralized server
+    storing contact information or plaintext. Think of it as Bitcoin but for messaging instead of
+    payments.
+    <br>
+    <br>
+    Your active conversation will appear here after you <div (click)="_clickCreateAccountOrLogin()" class="link">create an account or login</div>. Creating an account is quick and anonymous (it just creates a local public/private key pair).
+  </div>
+  <!--With a logged-in user-->
+  <div *ngIf="appData != null && appData.loggedInUser != null">
+
+    <div *ngIf="currentContactObj == null" class="help-text" style="text-align: center;">
+      Start a new conversation or select an existing contact to message. 
+    </div>
+    <div *ngIf="currentContactObj != null">
+      <!--Information on the particular contact-->
+      <div class="contact-info-container">
+
+        <div class="field-container">
+          <div class="label">
+            Public Key
+            <span (mouseenter)="showUserPublicKeyTooltip = true" (mouseleave)="showUserPublicKeyTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showUserPublicKeyTooltip" class="info-tooltip-contents order-current-status">
+                The public key of the user you are messaging.
+              </div>
+            </span>:
+          </div>
+          <div class="value" style="margin-right: 0;">
+            <div style="font-size: .8rem; display: inline-block;">
+              {{currentContactObj.PublicKeyBase58Check}}
+            </div>
+            <div class="btn btn-light" (click)="appData._copyText(currentContactObj.PublicKeyBase58Check)" style="margin-left: .5rem; height: 1.5rem; margin-right: 0;">
+              <div class="divtext">
+                Copy
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-container">
+          <div class="label">
+            Nickname
+            <span (mouseenter)="showNicknameTooltip = true" (mouseleave)="showNicknameTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showNicknameTooltip" class="info-tooltip-contents order-current-status">
+                Use this input to set a nickname for this user. If the user is a merchant, their
+                nickname will default to their merchant username, which is globally unique. But
+                regardless, you can change it to whatever you want using this field.
+              </div>
+            </span>:
+          </div>
+          <div class="value" style="margin-right: 0;">
+            <input [(ngModel)]="contactNickname" style="width: 21rem;" placeholder="Enter a nickname..." type="text" value="" name="" id=""/>
+            <div class="btn btn-light" (click)="_setNickname(contactNickname)" style="margin-left: .5rem; height: 1.5rem; margin-right: 0;">
+              <div class="divtext">
+                Set Nickname
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style=" margin-top: .5rem;">
+
+          <div class="btn btn-light" (click)="showAdvancedFeeOptions = !showAdvancedFeeOptions" style="margin-right: 0;">
+            <div *ngIf="!showAdvancedFeeOptions" class="divtext">
+              Show Advanced Fee Options
+            </div>
+            <div *ngIf="showAdvancedFeeOptions" class="divtext">
+              Hide Advanced Fee Options
+            </div>
+          </div>
+          <span (mouseenter)="showAdvancedFeeTooltip = true" (mouseleave)="showAdvancedFeeTooltip = false" class="info-tooltip" style="margin-left: .5rem; font-size: 1.25rem; font-weight: bold;">
+            (?)
+            <div *ngIf="showAdvancedFeeTooltip" class="info-tooltip-contents order-current-status" style="width: 30rem;">
+              Every message you send is technically a transaction that gets broadcast to other
+              Ultra nodes and mined into a block. As such, a small fee is required with each message you send in order to
+              incentivize miners to include the message transaction in a block. Normally the
+              fee is a very small amount, but this setting allows you to tweak how much you pay
+              per kilobyte of data you send. If you don't know what you're doing, just leave it
+              as-is.
+            </div>
+          </span>
+          <div *ngIf="showAdvancedFeeOptions" class="field-container" style="padding-left: 1.5rem;">
+
+            <div class="label">
+              Network Transaction Fee Rate (in Ultra per KiloByte)
+              <span (mouseenter)="showMessageFeeRateTooltip = true" (mouseleave)="showMessageFeeRateTooltip = false" class="info-tooltip">
+                (?)
+                <div *ngIf="showMessageFeeRateTooltip" class="info-tooltip-contents" style="width: 35rem; bottom: auto; top: 0;">
+                  Because the Ultranet is fully decentralized, transactions (including message transactions like the ones you send on this page) usually require a small transaction fee to
+                  incentivize miners to process them in a timely manner (same as with Bitcoin). A transaction is
+                  typically evaluated based on its "fee rate," which is the amount of Ultra it pays per kilobyte
+                  of data it contains. The fee rate being used as the default here is based on the median of the
+                  transaction fees set in the previous Ultra block, but you
+                  can increase it if you want your transaction to process (aka "confirm") more quickly or decrease
+                  it if you don't care when your transaction confirms. Just be careful not to set it too low or
+                  else your transaction will be stuck in limbo for a long time. <em>If you don't know what you're doing,
+                    stick with the default.</em> If you set it to a weird fee rate value and want to go back to the default, simply
+                  hit "Reset Fee Rate" on the right. Most transactions are under a kilobyte and so the "total fee" for each message
+                  placement should not exceed the "fee rate" specified in this field by much, if at all.
+                </div>
+              </span>:
+            </div>
+            <div class="value">
+              <input [(ngModel)]="feeRateUltraPerKB" type="number"/>
+              <span style="margin-left: .5rem;">(= ~{{appData.nanosToUSD(feeRateUltraPerKB * 1e9)}} USD/KB)</span>
+
+              <div (click)="_clickResetFeeRate()" class="btn btn-light" style="margin-left: .5rem;">
+                <div class="divtext" style="font-weight: bold;">
+                  Reset Fee Rate
+                </div>
+              </div>
+            </div>
+
+          </div>
+          
+        </div>
+         
+      </div>
+      <!--The messages container-->
+      <div class="message-container" style="margin-top: 1rem;">
+
+          <div *ngFor="let message of currentContactObj.Messages; index as messageIndex">
+            <div *ngIf="message.IsSender" style="width: 100%; display: flex; justify-content: flex-end;">
+              <div class="sender-bubble">{{message.DecryptedText}}</div>
+            </div>
+            <div *ngIf="!message.IsSender">
+              <div class="recipient-bubble">{{message.DecryptedText}}</div>
+
+                <!--{{message.RecipientPublicKeyBase58Check}}-->
+                <!--{{message.SenderPublicKeyBase58Check}}-->
+                <!--{{_tstampToDate(message.TstampNanos)}}-->
+              
+                <!--{{message.RecipientPublicKeyBase58Check}}-->
+                <!--{{message.SenderPublicKeyBase58Check}}-->
+                <!--{{_tstampToDate(message.TstampNanos)}}-->
+            </div>
+          </div>
+          
+      </div>
+      <!--The text entry container-->
+      <div class="text-entry-container">
+        <div style="display: inline-block; width: 80%; height: 100%;">
+          <textarea (keypress)="_messageTextChanged($event)" [(ngModel)]="messageText" placeholder="" type="number" value="" name="" id="" style="height: 100%; width: 100%;"></textarea>
+        </div>
+        <div class="button-container" (click)="_sendMessage()">
+          <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+            Send 
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+</div>
+

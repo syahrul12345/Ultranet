@@ -1,0 +1,186 @@
+@import 'bootstrap.min.css';
+@import 'variables.scss';
+
+body {
+  background-color: $dark-color;
+}
+
+.info-tooltip {
+  position: relative;
+  cursor: pointer;
+  color: white;
+}
+.info-tooltip-contents {
+  position: absolute;
+  text-align: left;
+  top: -.5rem;
+  left: 1.5rem;
+  background-color: $light-color;
+  cursor: pointer;
+  border: 1px solid $dark-in-between-color;
+  padding: .5rem;
+  color: $dark-color;
+  width: 15rem;
+  z-index: 1;
+  font-size: 1rem;
+  font-weight: bold;;
+}
+
+.btn.btn-light {
+  cursor: pointer;
+  font-size: $button-font-size;
+  height: $button-height;
+
+  transition: 0s;
+  background-color: $light-color;
+  color: $dark-color;
+  border-radius: 5px;
+  border: 2px solid $light-color;
+  &:hover {
+    background-color: $light-hover-color;
+    border: 2px solid $light-hover-color;
+  }
+  &:active {
+    color: $dark-color;
+  }
+}
+.btn.btn-light.selected {
+  background-color: $dark-color;
+  color: $light-color;
+  cursor: default;
+  &:hover {
+    background-color: $dark-color;
+    border: 2px solid $light-color;
+  }
+  &:active {
+    color: $light-color;
+  }
+}
+.divtext {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.separating-line {
+  height: 1px;
+  width: 100%;
+  background-color: $separating-line-color;
+}
+.title {
+  display: inline-block;
+  color: $important-text-color;
+  font-size: $big-text-size;
+  font-weight: bold;
+}
+.subtitle {
+  display: inline-block;
+  color: $light-color;
+  text-decoration: underline;
+  font-size: $big-text-size;
+}
+.form-label {
+  color: $important-text-color;
+  font-size: $normal-text-size;
+}
+.normal-text {
+  color: $text-color;
+  font-size: $normal-text-size;
+}
+.warning-text {
+  color: $error-color;
+  font-weight: bold;
+  font-size: $normal-text-size;
+}
+input {
+  background-color: $dark-color;
+  border: 1px solid $separating-line-color;
+  color: $important-text-color;
+  padding-left: .5rem;
+  padding-right: .5rem;
+  &:focus {
+    outline: none;
+  }
+}
+textarea {
+  background-color: $dark-color;
+  border: 1px solid $separating-line-color;
+  color: $important-text-color;
+  padding-left: .5rem;
+  padding-right: .5rem;
+  &:focus {
+    outline: none;
+  }
+}
+.emph {
+  color: $important-text-color;
+  display: contents;
+}
+.btn.btn-light.yes {
+  color: $good-color;
+  border-color: $good-color;
+  font-weight: bold;
+  background-color: $separating-line-color;
+}
+.btn.btn-light.no {
+  color: $bad-color;
+  border-color: $bad-color;
+  font-weight: bold;
+  background-color: $separating-line-color;
+}
+em {
+  color: $important-text-color;
+  font-style: normal;
+}
+.needs-basic-form {
+  .subtitle {
+    margin-top: 1rem;
+  }
+  .form-label {
+    display: inline-block;
+    width: 12rem;
+    vertical-align: top;
+  }
+  .input-container {
+    margin-top: 1rem;
+    .random-username {
+      margin-left: 1rem;
+    }
+  }
+}
+.next-back-container {
+  margin-top: 1rem;
+  .btn.btn-light {
+    width: 7.5rem;
+    margin-right: 1rem;
+  }
+}
+.help-text {
+  margin-top: 1rem;
+}
+.action-items-badge {
+ width: auto;
+ padding-left: .5rem;
+ padding-right: .5rem;
+ background-color: $error-color;
+ border-radius: 1rem;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ color: white;
+ font-weight: bold;
+}
+.minus {
+  color: white;
+  display: inline-block;
+  margin-right: .5rem;
+  cursor: pointer;
+}
+.link {
+    color: white;
+    text-decoration: underline;
+    cursor: pointer;
+    display: inline;
+}
+.file-upload-button::-webkit-file-upload-button { cursor:pointer; }

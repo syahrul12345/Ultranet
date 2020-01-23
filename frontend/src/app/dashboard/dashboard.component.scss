@@ -1,0 +1,421 @@
+@import '../../variables.scss';
+
+.no-dashboard-container {
+  color: $light-color;
+  font-size: 1.25rem;
+}
+.no-listings {
+  color: $light-color;
+  font-size: 1.25rem;
+  margin-top: .5rem;
+  margin-bottom: .5rem;
+}
+.btn.btn-light {
+  margin-right: 1rem;
+}
+.manage-listings-title {
+    font-size: 1.5rem;
+    margin-top: 1rem;
+    color: $light-color;
+    font-weight: bold;
+    text-decoration: underline;
+}
+.listing-entry-heading {
+    color: $light-color;
+    font-weight: normal;
+    font-size: 1.25rem;
+    display: inline-block;
+    padding-right: 1rem;
+    margin-bottom: 1rem;
+}
+.listing-entry-value {
+    color: $light-color;
+    font-weight: normal;
+    font-size: 1rem;
+    display: inline-block;
+    padding-right: 1rem;
+}
+.manage-listings-value {
+    border-top: 1px solid $dark-in-between-color;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    align-items: center;
+    display: flex;
+}
+.listing-field-label {
+  color: $light-color;
+  font-weight: normal;
+  font-size: 1.25rem;
+  display: inline-block;
+  padding-right: 1rem;
+  width: 18rem;
+  vertical-align: top;
+  margin-bottom: .5rem;
+}
+.listing-field-title {
+  margin-top: 1rem;
+  input {
+    width: 50rem;
+    display: inline-block;
+  }
+}
+textarea {
+  width: 50rem;
+  display: inline-block;
+}
+.listing-field-description {
+  textarea {
+    width: 50rem;
+    display: inline-block;
+  }
+}
+.listing-field-price {
+  display: flex;
+  align-items: center;
+}
+.listing-field-units {
+  display: flex;
+  align-items: center;
+}
+.listing-field-product-type {
+  display: flex;
+  align-items: center;
+}
+.listing-field-ships-to {
+  input {
+    width: 50rem;
+    display: inline-block;
+  }
+}
+.listing-field-extra {
+  display: flex;
+  align-items: center;
+  input {
+    width: 43.5rem;
+    display: inline-block;
+  }
+}
+.listing-field-label.extra-field {
+  width: 30rem;
+  border: 1px solid white;
+  font-weight: lighter;
+  font-size: 1rem;
+  margin-right: 1rem;
+  padding-left: .5rem;
+}
+.extra-field-container {
+  padding-bottom: .5rem;
+  padding-top: .5rem;
+  display: flex;
+  align-items: center;
+  white-space: pre-line;
+
+  .is-required {
+
+  }
+}
+.listing-field-images-title {
+  color: $light-color;
+  font-weight: bold;
+  font-size: 1.25rem;
+  vertical-align: top;
+  margin-top: 1rem;
+}
+.listing-field-images-container {
+  color: $light-color;
+  font-weight: lighter;
+  font-size: 1rem;
+  vertical-align: top;
+  margin-top: .5rem;
+  margin-bottom: 1rem;
+  .listing-thumbnail {
+    // background-image set dynamically
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 200px;
+    width: 200px;
+    border: 3px solid $light-color;
+  }
+  .listing-image {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 250px;
+    width: 250px;
+    border: 3px solid $light-color;
+    background-color: $dark-in-between-color;
+    position: relative;
+
+    .delete {
+      width: 2rem;
+      height: 2rem;
+      background-color: #844848;
+      position: absolute;
+      right: -1rem;
+      top: -1rem;
+      border-radius: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: $light-color;
+      border: 2px solid $light-color;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.25rem;
+      vertical-align: middle;
+      padding-bottom: .15rem;
+    }
+  }
+  .listing-images-container {
+    margin-right: 1rem;
+    display: inline-block;
+  }
+  .listing-image-controller {
+    margin-top: .5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    .btn {
+      margin-right: 0;
+    }
+  }
+}
+.category-field-container {
+  .category-input-container {
+      display: inline-block;
+      position: relative;
+  }
+  .completion-container {
+      position: absolute;
+      top: 100%;
+      background-color: $light-color;
+      width: 100%;
+      cursor: pointer;
+      z-index: 1;
+  }
+  .completion-row {
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid $dark-in-between-color;
+      padding-left: .5rem;
+  }
+}
+.instant-instructions {
+    color: $light-color;
+    font-weight: lighter;
+    font-size: 1rem;
+    vertical-align: top;
+    margin-top: .5rem;
+    margin-bottom: 1rem;
+}
+.content-container {
+  padding-top: 1rem;
+}
+
+.order-container {
+  .image-container {
+    height: 100%;
+    width: 14rem;
+    display: inline-block;
+    cursor: pointer;
+
+    .image-flex-container {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .image {
+        margin-top: .5rem;
+        height: 13rem; 
+        width: 13rem;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        border: 3px solid $light-color;
+      }
+    }
+  }
+  .single-entry-container {
+    border: 1px solid $dark-in-between-color;
+    margin-top: 1rem;
+  }
+  .single-entry-container.encrypted {
+    background-color: $dark-in-between-color;
+
+    .label {
+      color: black;
+    }
+    .input {
+      background-color: $dark-in-between-color;
+      border: 1px solid black;
+      color: black;
+    }
+    .input::placeholder {
+      color: #323232;
+    }
+    .decrypt {
+      background-color: white;
+      color: black;
+      border: 1px solid black;
+      
+    }
+  }
+  .encrypted-title {
+    color: black;
+    font-weight: bold;
+    font-size: 1.5rem;
+  }
+  .encrypted-help-text {
+    color: black;
+    font-weight: normal;
+    font-size: 1rem;
+  }
+  .summary-content-container {
+    width: calc(100% - 14rem);
+    height: 100%;
+    display: inline-block;
+    vertical-align: top;
+    padding-right: 1rem;
+
+    .top-content-container {
+      width: 100%;
+
+      .title {
+        margin-top: .5rem;
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: white;
+        display: block;
+
+        cursor: pointer;
+      }
+    }
+
+    .subcontent-container {
+      width: 100%;
+      vertical-align: top;
+
+      .subcontent-text {
+        font-size: 1rem;
+        font-weight: bold;
+        color: $light-color;
+      }
+      .subcontent-left-container {
+        width: calc(100% - 12.5rem);
+        display: inline-block;
+        vertical-align: top;
+      }
+      .subcontent-right-container {
+        width: 12.5rem;
+        display: inline-block;
+        vertical-align: top;
+      }
+    }
+
+    .merchant-username {
+      margin-top: 0rem;
+      font-size: 1rem;
+      font-weight: bold;
+      color: white;
+      display: block;
+    }
+
+    .footer {
+        font-size: 1rem;
+        font-weight: bold;
+        color: $light-color;
+    }
+  }
+  .field-container {
+    margin-top: .5rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    min-height: 1rem;
+
+    .label {
+      font-size: 1rem;
+      font-weight: bold;
+      color: $light-color;
+      text-decoration: none;
+      display: inline-block;
+      margin-right: .5rem;
+      width: 15rem;
+
+      .action-required {
+        color: $error-color;
+        font-weight: bold;
+      }
+    }
+    .value {
+      font-size: 1rem;
+      font-weight: normal;
+      display: inline-block;
+      color: white;
+      margin-right: 1rem;
+
+      input {
+        width: 15rem;
+      }
+      textarea {
+        width: 50rem;
+      }
+    }
+    .value.negative {
+      color: $error-color;
+    }
+    .value.positive {
+      color: $good-color;
+    }
+
+    .dull {
+      font-weight: lighter;
+    }
+
+    .btn {
+      margin-right: 1rem;
+    }
+
+    .public-key {
+      font-size: 1rem;
+      width: 33rem;
+    }
+  }
+}
+.negative {
+  color: $error-color;
+}
+.positive {
+  color: $good-color;
+}
+.top-order-help-text {
+  color: $light-color;
+  font-size: 1.25rem;
+}
+.order-current-status.info-tooltip-contents {
+  //background-color: red;
+  width: auto;
+  bottom: auto;
+  top: 0;
+  background-color: white;
+}
+.order-lifecycle-image {
+  background-image: url('../../img/order_state_diagram.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 671px;
+  width: 750px;
+}
+.error {
+  margin-top: .5rem;
+  color: $error-color;
+}
+.signature-text {
+  color: $light-color;
+  font-size: 1rem;
+}

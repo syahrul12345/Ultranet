@@ -1,0 +1,391 @@
+<!--View showing information on the logged-in user.-->
+<div *ngIf="appData.loggedInUser == null" class="no-dashboard-container" style="text-align: center;">
+  <div style="margin-top: 1rem;">
+    <div style="font-size: 1.5rem;">
+      Welcome to the Ultranet's Decentralized Exchange
+    </div>
+    <br>
+    <div>
+      You can use this page to convert Bitcoin into Ultra using a novel decentralized process called “interchange.”
+      The experience looks and feels just like depositing and exchange cryptocurrency on a centralized exchange, but
+      it is done without any reliance on centralized third parties.
+    </div>
+    <br>
+    <div (click)="_clickCreateAccountOrLogin()" class="link">Create an account or login</div> to purchase Ultra. 
+    <div>
+      Creating an account is quick and anonymous (it just generates a public/private key pair for you).
+    </div>  
+  </div>
+</div>
+<div *ngIf="appData.loggedInUser != null" class="logged-in-user-info">
+  <div class="title" (click)="showAreYouReady=!showAreYouReady" style="cursor: pointer;">
+    <div *ngIf="showAreYouReady === true" class="minus">-</div>
+    <div *ngIf="showAreYouReady === false" class="minus">+</div>
+    Are You Ready? 
+  </div>
+  <div *ngIf="showAreYouReady">
+    <div class="help-text" style="padding: 0; margin: 0;">
+      Today, the major technology platforms (Google, Baidu, Amazon, Alibaba, Facebook, WeChat, etc) are
+      controlled by a handful of elites. Virtually all of our information is owned by people who may not have our
+      best interests at heart, and the basic rules that govern virtually everything we do online get decided through opaque
+      processes that we have very little transparency
+      on and input into. This leaves what we say, what we see, what we hear, what we buy, and, if the trend continues, what we can
+      and can't do with our lives, ultimately out of our control.
+      Is this the kind of world we want to live in? Or could there be a better way to organize society's technical infrastructure?
+    </div>
+    <br>
+    <div class="help-text" style="padding: 0; margin: 0;">
+      The Ultranet is the peoples' answer to the platform oligarchy. It is a marketplace that is completely decentralized
+      like Bitcoin
+      and, as such, its owners are the people who collectively run the software and own the currency (called Ultra). You're
+      one of the people running the software right now. Are you ready to take the next step and help bring an end to the
+      platform monopoly era?
+    </div>
+  </div>
+
+  <!--<div class="title" (click)="showHowItWorks=!showHowItWorks" style="cursor: pointer;">
+    <div *ngIf="showHowItWorks === true" class="minus">-</div>
+    <div *ngIf="showHowItWorks === false" class="minus">+</div>
+    How Buying Ultra Works 
+  </div>
+  <div *ngIf="showHowItWorks" style="padding-left: 0rem;">
+    <div class="help-text" style="padding-left: 0rem;">
+      Coming Soon
+    </div>
+  </div> -->
+
+  <div *ngIf="appData.loggedInUser.LocalState != null && _numPendingTxns(appData.loggedInUser.LocalState.BitcoinTxnsToBroadcast) !== 0">
+    <div class="title" (click)="showPendingTransactions=!showPendingTransactions" style="cursor: pointer;">
+      <div *ngIf="showPendingTransactions === true" class="minus">-</div>
+      <div *ngIf="showPendingTransactions === false" class="minus">+</div>
+      Pending Transactions 
+      <span (mouseenter)="showPendingTransactionsTooltip = true" (mouseleave)="showPendingTransactionsTooltip = false" class="info-tooltip">
+        (?)
+        <div *ngIf="showPendingTransactionsTooltip" class="info-tooltip-contents" style="width: 35rem; top: 0; bottom: auto;">
+          <div>
+            Below are the Transaction IDs for Bitcoin transactions that have been broadcasted onto the
+            Bitcoin blockchain but have not yet been mined into a block. You can check the status
+            of these transactions on any Bitcoin block explorer, such as blockchain.info. Once
+            these transactions have been mined into a Bitcoin block, your account will be credited
+            with the Ultra that you intended to purchase with these transactions.
+          </div>
+        </div>
+      </span>
+    </div>
+
+    <div *ngIf="showPendingTransactions">
+    <div style="padding-left: 1.5rem;">
+      <div *ngFor="let pendingTxn of appData.loggedInUser.LocalState.BitcoinTxnsToBroadcast | keyvalue;  index as txnIndex">
+        <div class="field-container">
+          <div class="label">
+            Transaction {{txnIndex+1}}:
+          </div>
+        </div>
+        <div style="margin-left: 1.5rem; margin-top: 0rem;">
+          <div class="field-container">
+            <div class="label">
+              Bitcoin Transaction ID:
+            </div>
+            <div class="value">
+              <div style="width: 36rem; display: inline-block; font-size: 1rem;">
+                {{pendingTxn.key}}
+              </div>
+              <div class="btn btn-light"  (click)="appData._copyText(pendingTxn.key)">
+                <div class="divtext">
+                  Copy
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="pendingTxn.value != null && pendingTxn.value.BitcoinTxn != null && pendingTxn.value.BitcoinTxn.TxOut != null &&  pendingTxn.value.BitcoinTxn.TxOut.length !== 0 && pendingTxn.value.BitcoinTxn.TxOut[0].Value != null" class="field-container">
+            <div class="label">
+              Amount Being Exchanged:
+            </div>
+            <div class="value">
+              <div style="width: 40rem; display: inline-block;">
+                {{(pendingTxn.value.BitcoinTxn.TxOut[0].Value / 1e8).toFixed(8)}} Bitcoin =>
+                {{(pendingTxn.value.BitcoinTxn.TxOut[0].Value / (appData.satoshisPerUltraExchangeRate / .999)).toFixed(9)}} Ultra
+                  (= ~{{appData.formatUSD(
+                      pendingTxn.value.BitcoinTxn.TxOut[0].Value * appData.usdPerBitcoinExchangeRate / 1e8, 2)}} USD)
+              </div>
+            </div>
+          </div>
+          <!--{{pendingTxn.value}}-->
+        </div>
+      </div>
+      <div class="help-text" style="padding-left: 0rem;">
+      </div>
+    </div> 
+      
+    </div>
+  </div>
+
+
+  <div class="title">
+    Step 1: Deposit Bitcoin 
+    <span (mouseenter)="showDepositBitcoinTooltip = true" (mouseleave)="showDepositBitcoinTooltip = false" class="info-tooltip">
+      (?)
+      <div *ngIf="showDepositBitcoinTooltip" class="info-tooltip-contents" style="width: 35rem; top: 0; bottom: auto;">
+        <div>
+          Ultra can be purchased in under five minutes using Bitcoin through a completely decentralized process.
+        </div>
+        <div style="margin-top: .5rem;">
+          To get started, simply send Bitcoin to your deposit address below. Note that deposits should show up
+          within thirty seconds or so but sometimes, for various technical reasons, it can take up to an hour
+          (though this should be extremely rare).
+          Once you've deposited Bitcoin, you can exchange
+          it for Ultra in step two below. If it's your first time doing this, we recommend starting with a small
+          "test" amount of Bitcoin to get comfortable with the flow.
+        </div>
+      </div>
+    </span>
+  </div>
+  <div style="padding-left: 1.5rem;">
+    <div class="field-container">
+      <div class="label">
+        Bitcoin Deposit Address
+        <span (mouseenter)="showBitcoinBalanceTooltip = true" (mouseleave)="showBitcoinBalanceTooltip = false" class="info-tooltip">
+          (?)
+          <div *ngIf="showBitcoinBalanceTooltip" class="info-tooltip-contents" style="width: 25rem; top: 0; bottom: auto;">
+            <div>
+              Send Bitcoin to this address so that you can exchange it for Ultra in step two below.
+            </div>
+            <div style="margin-top: .5rem;">
+              If for whatever reason you send too much Bitcoin to your deposit address and need to get it back, you
+              can access the Bitcoin in this address by importing your Ultranet seed phrase into most standard Bitcoin wallets
+              like Electrum and choosing m/44'/0'/0'/0/0 as your derivation path. This works because your Ultranet seed phrase is what's used to generate your Bitcoin deposit address. If
+              you'd like to learn more about this, see the white paper on the ultranet.one website.
+            </div>
+          </div>
+        </span>:
+      </div>
+      <div class="value">
+          {{appData.loggedInUser.SeedInfo.BtcDepositAddress}}
+      </div>
+      <div class="btn btn-light"  (click)="appData._copyText(appData.loggedInUser.SeedInfo.BtcDepositAddress)">
+        <div class="divtext">
+          Copy
+        </div>
+      </div>
+    </div>
+    <div class="field-container">
+      <div class="label">
+        Bitcoin Available to Exchange
+        <span (mouseenter)="showBitcoinDepositAddressTooltip = true" (mouseleave)="showBitcoinDepositAddressTooltip = false" class="info-tooltip">
+          (?)
+          <div *ngIf="showBitcoinDepositAddressTooltip" class="info-tooltip-contents" style="width: 25rem; top: 0; bottom: auto;">
+            <div>
+              This is how much Bitcoin you've deposited into the deposit address listed above.
+            </div>
+            <div style="margin-top: .5rem;">
+              This value updates about every minute, but for various technical reasons sometimes it
+              can take up to an hour for your transaction to be shown in your balance.
+            </div>
+          </div>
+        </span>:
+      </div>
+      <div class="value">
+          <!--We can expect final_balance to always be set on a logged in user-->
+          {{(appData.loggedInUser.BitcoinAPIResponse.final_balance / 1e8).toFixed(8)}} Bitcoin
+          (= ~{{appData.formatUSD(
+             appData.loggedInUser.BitcoinAPIResponse.final_balance * appData.usdPerBitcoinExchangeRate / 1e8, 2)}} USD)
+      </div>
+    </div>
+    <div class="field-container" style="padding-left: 1.5rem;">
+      <div class="label" style="width: auto; margin-right: 1rem;">
+        Time Before Next Balance Update
+        <span (mouseenter)="showBitcoinTimeBeforeNextUpdateTooltip = true" (mouseleave)="showBitcoinTimeBeforeNextUpdateTooltip = false" class="info-tooltip">
+          (?)
+          <div *ngIf="showBitcoinTimeBeforeNextUpdateTooltip" class="info-tooltip-contents" style="width: 25rem; top: 0; bottom: auto;">
+            <div>
+              Normally, when you send Bitcoin to your deposit address, one or two update cycles is enough
+              to make it show up here. Sometimes, however, for various technical reasons, it can
+              take as long as one hour to show up. Note this is very rare, however, and that
+              usually your deposit should show up in no more than one or two update cycles. Note that
+              we are working on making deposits instant.
+            </div>
+          </div>
+        </span>:
+      </div>
+      <div class="value">
+          {{buyUltraFields.timeBeforeNextUpdate}}
+      </div>
+    </div>
+  </div>
+  <div class="title">
+    Step 2: Exchange Bitcoin for Ultra 
+    <span (mouseenter)="showExchangeBitcoinForUltraTooltip = true" (mouseleave)="showExchangeBitcoinForUltraTooltip = false" class="info-tooltip">
+      (?)
+      <div *ngIf="showExchangeBitcoinForUltraTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+        <div>
+          To purchase Ultra, simply specify the amount you'd like to buy and hit "Buy Ultra" below.
+        </div>
+        <div style="margin-top: .5rem;">
+          The Ultra <-> Bitcoin exchange rate is determined by the protocol and is such that a fixed supply of
+          Ultra will be created with steady deflation in the long run. In practice, this means that the price of Ultra
+          starts low and increases exponentially as more Ultra is created until no more Ultra can be
+          created anymore (or until all bitcoin in existence has been burned to purchase Ultra at very
+          high exchange rates which, at least theoretically-speaking, could happen).
+        </div>
+      </div>
+    </span>
+  </div>
+  <div style="padding-left: 1.5rem;">
+    <div class="field-container"> 
+      <div class="label">
+        Exchange Rate
+        <span (mouseenter)="showUltraExchangeRateTooltip = true" (mouseleave)="showUltraExchangeRateTooltip = false" class="info-tooltip">
+          (?)
+          <div *ngIf="showUltraExchangeRateTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+            <div>
+              This is how much Ultra you will receive per Bitcoin you exchange. The price is set
+              by the protocol and increases exponentially the more Ultra that gets created, resulting in a fixed supply with steady deflation in the long run.
+            </div>
+          </div>
+        </span>:
+      </div>
+      <div class="value">
+        <!--The .999 factor comes in due to having to consider BitcoinExchangeFeeBasisPoints
+        that goes to pay the miner.-->
+        {{1e8 / appData.satoshisPerUltraExchangeRate * .999}} Ultra per Bitcoin
+      </div>
+    </div>
+
+    <div class="field-container"> 
+      <div class="label">
+        Ultra Left at this Price
+        <span (mouseenter)="showUltraLeftAtPriceTooltip = true" (mouseleave)="showUltraLeftAtPriceTooltip = false" class="info-tooltip">
+          (?)
+          <div *ngIf="showUltraLeftAtPriceTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+            <div>
+              This is the amount of Ultra left at the exchange rate shown above. Once this Ultra is sold
+              the protocol will create a new batch of Ultra to sell at an exponentially higher price.
+            </div>
+          </div>
+        </span>:
+      </div>
+      <div class="value">
+        {{(appData.nanosLeftInTranche / 1e9).toFixed(2)}} Ultra (= ~{{appData.nanosToUSD(appData.nanosLeftInTranche, 2)}} USD)
+      </div>
+    </div>
+
+    <div class="field-container"> 
+      <div class="label">
+        Ultra to Purchase
+        <span (mouseenter)="showUltraToBuyTooltip = true" (mouseleave)="showUltraToBuyTooltip = false" class="info-tooltip">
+          (?)
+          <div *ngIf="showUltraToBuyTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+            <div>
+              Set this to the amount of Ultra you would like to buy. To buy the maximum amount,
+              simply hit "Max."
+            </div>
+          </div>
+        </span>:
+      </div>
+      <input type="number" [(ngModel)]="buyUltraFields.ultraToBuy" (ngModelChange)="_updateUltraToBuy($event)"/>
+      <div class="btn btn-light" (click)="_clickMaxUltra()" style="margin-left: 1rem;">
+        <div class="divtext">
+          Max
+        </div>
+      </div>
+    </div>
+    <div class="field-container"> 
+      <div class="label">
+        Bitcoin to Exchange
+        <span (mouseenter)="showBitcoinToExchangeTooltip = true" (mouseleave)="showBitcoinToExchangeTooltip = false" class="info-tooltip">
+          (?)
+          <div *ngIf="showBitcoinToExchangeTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+            <div>
+              This is the amount of Bitcoin you will be converting into Ultra. Note this does not include
+              the small network transaction fee calculated below. If you would like to exchange all of the
+              Bitcoin you have available for Ultra, simply hit "Max" above.
+            </div>
+          </div>
+        </span>:
+      </div>
+      <input type="number" [(ngModel)]="buyUltraFields.bitcoinToExchange" (ngModelChange)="_updateBitcoinToExchange($event)"/>
+    </div>
+    
+  </div>
+
+  <div style="padding-left: 1.5rem;">
+    <div class="field-container"> 
+      <div class="label">
+        Bitcoin Network Fee
+        <span (mouseenter)="showBitcoinExchangeTransactionFee = true" (mouseleave)="showBitcoinExchangeTransactionFee = false" class="info-tooltip">
+          (?)
+          <div *ngIf="showBitcoinExchangeTransactionFee" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+            <div>
+              The process of exchanging Bitcoin for Ultra requires posting a transaction to
+              the Bitcoin blockchain. For this reason, we must add a small network fee to
+              incentivize miners to process the transaction. If you'd like to learn more about
+              the decentralized exchange mechanism, see the white paper on the ultranet.one website. 
+              If you'd like to adjust this fee hit the "Show Advanced Fee Setting"
+              button. If you don't know what this is, we recommend leaving the default as-is.
+            </div>
+          </div>
+        </span>:
+      </div>
+      <div class="value">
+        <div *ngIf="buyUltraFields.error == null || buyUltraFields.error === ''">
+          {{(buyUltraFields.bitcoinTotalTransactionFeeSatoshis / 1e8).toFixed(8)}} Bitcoin
+          (= ~{{appData.formatUSD(
+              buyUltraFields.bitcoinTotalTransactionFeeSatoshis * appData.usdPerBitcoinExchangeRate / 1e8, 2)}} USD)
+        </div>
+        <div *ngIf="buyUltraFields.error != null && buyUltraFields.error !== ''" class="error" style="margin-top: 0">
+          0.00000000 Bitcoin
+          (= ~{{appData.formatUSD(0, 2)}} USD)
+        </div>
+      </div>
+      <div class="btn btn-light" (click)="showAdvancedFeeSetting = !showAdvancedFeeSetting">
+        <div class="divtext" *ngIf="showAdvancedFeeSetting == null || showAdvancedFeeSetting === false">
+          Show Advanced Fee Setting
+        </div>
+        <div class="divtext" *ngIf="showAdvancedFeeSetting != null && showAdvancedFeeSetting === true">
+          Hide Advanced Fee Setting
+        </div>
+      </div>
+    </div>
+    <div style="padding-left: 1.5rem;">
+      <div *ngIf="showAdvancedFeeSetting" style="padding-left: 1.5rem;">
+        <div class="field-container"> 
+          <div class="label">
+            Bitcoin Transaction Fee Rate (in Satoshis per KB):
+          </div>
+          <input min=0 type="number" [(ngModel)]="buyUltraFields.bitcoinTransactionFeeRateSatoshisPerKB" (ngModelChange)="_updateSatoshisPerKB()"/>
+
+          <div class="value" style = "margin-left: 1rem;">
+            Satoshis per KB
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="field-container"> 
+      <div class="label">
+        Total Bitcoin Being Spent:
+      </div>
+      <div class="value">
+        <div *ngIf="buyUltraFields.error == null || buyUltraFields.error === ''">
+          {{((buyUltraFields.bitcoinToExchange*1e8 + buyUltraFields.bitcoinTotalTransactionFeeSatoshis) / 1e8).toFixed(8)}} Bitcoin
+          (= ~{{appData.formatUSD(
+              ((buyUltraFields.bitcoinToExchange*1e8 + buyUltraFields.bitcoinTotalTransactionFeeSatoshis) / 1e8), 2)}} USD)
+        </div>
+        <div *ngIf="buyUltraFields.error != null && buyUltraFields.error !== ''" class="error" style="margin-top: 0">
+          0.00000000 Bitcoin
+          (= ~{{appData.formatUSD(0, 2)}} USD)
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="buyUltraFields.error != null && buyUltraFields.error !== ''" class="error">
+    {{buyUltraFields.error}}
+  </div>
+  <div class="btn btn-light yes" (click)="_clickBuyUltra()" style="margin-top: 1rem;">
+    <div class="divtext">
+      Buy Ultra
+    </div>
+  </div>
+
+  <div style="margin-bottom: 3rem;">
+  </div>
+</div>

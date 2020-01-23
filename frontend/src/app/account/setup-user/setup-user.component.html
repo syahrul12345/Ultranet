@@ -1,0 +1,1237 @@
+<!--The main page when no flows are being run-->
+<div *ngIf="viewShowing === ViewShowing.None" class="main-accounts-page">
+  <!--A container for buttons at the top-->
+  <div class="top-button-container">
+    <!--Logout button shows only if there is a user logged in-->
+    <div *ngIf="appData.loggedInUser != null" class="btn btn-light" (click)="_clickLogoutUser()">
+      <div class="divtext">
+        Logout
+      </div>
+    </div>
+
+    <!--Create user and load account always show on the defualt accounts page-->
+    <div class="btn btn-light" (click)="_clickCreateUser()">
+      <div class="divtext">
+        Create New Account
+        <span *ngIf="appData == null || appData.userList == null || appData.userList.length === 0" style="margin-left: .5rem;">
+          <div class="action-items-badge" style="width: 1.5rem;">
+            1
+          </div>
+        </span>
+      </div>
+    </div>
+    <div class="btn btn-light" (click)="_clickLoadUserFromSeed()">
+      <div class="divtext">
+        Load Account from Seed
+      </div>
+    </div>
+  </div>
+
+  <!--View showing information on the logged-in user.-->
+  <div *ngIf="appData.loggedInUser != null" class="logged-in-user-info">
+    <div class="title">
+      <div *ngIf="appData.accountPageState.showAccountInfo === true" (click)="appData.accountPageState.showAccountInfo=false" class="minus">-</div>
+      <div *ngIf="appData.accountPageState.showAccountInfo === false" (click)="appData.accountPageState.showAccountInfo=true" class="minus">+</div>
+      Account Info 
+    </div>
+
+    <div *ngIf="appData.accountPageState.showAccountInfo">
+      <div class="field-container">
+        <div class="label">
+          Logged in as 
+        </div>
+        <div class="value">
+          {{appData.loggedInUser.Username}}
+        </div>
+      </div>
+
+      <!--View if the user is not yet a merchant-->
+      <div *ngIf="appData.loggedInUser.MerchantEntry == null">
+        <!--Account Type field-->
+        <div class="field-container">
+          <div class="label">
+            Account Type:
+          </div>
+          <div class="value">
+            buyer
+          </div>
+          <div class="btn btn-light"  (click)="_clickBecomeMerchant()">
+            <div class="divtext">
+              Become a Merchant
+            </div>
+          </div>
+        </div>
+
+        <!--Username field-->
+        <div class="field-container">
+          <div class="label">
+            Username
+            <span (mouseenter)="showAboutUsernameNonMerchantTooltip = true" (mouseleave)="showAboutUsernameNonMerchantTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showAboutUsernameNonMerchantTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                As a buyer, your username isn't unique and is used mainly to help you organize
+                your accounts. In that sense, it is more like a nickname than a username. For
+                merchants, however, usernames are globally unique and are associated with their
+                reputations on the blockchain.
+              </div>
+            </span>:
+          </div>
+          <div class="value">
+            <input placeholder="{{appData.loggedInUser.Username}}" type="text" [(ngModel)]="updateUsername"/>
+          </div>
+          <div class="btn btn-light"  (click)="_clickUpdateUsername()">
+            <div class="divtext">
+              Update Username
+            </div>
+          </div>
+        </div>
+
+        <!--Public key field-->
+        <div class="field-container">
+          <div class="label">
+            Public Key
+            <span (mouseenter)="showBuyerPublicKeyTooltip = true" (mouseleave)="showBuyerPublicKeyTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showBuyerPublicKeyTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                Your public key is used to sign all transactions you create and acts as part
+                of your identity as far as other users are concerned. If you want to create
+                a message and sign it, you can do that, among other things, on the Dashboard
+                page.
+              </div>
+            </span>:
+          </div>
+          <div *ngIf="appData != null && appData.loggedInUser != null" class="value public-key">
+              {{appData.loggedInUser.PublicKeyBase58Check}}
+          </div>
+          <div class="btn btn-light"  (click)="appData._copyText(appData.loggedInUser.PublicKeyBase58Check)">
+            <div class="divtext">
+              Copy
+            </div>
+          </div>
+        </div>
+
+        <!--Ultra balance field-->
+        <div class="field-container">
+          <div class="label">
+            Balance:
+          </div>
+          <div class="value">
+            {{appData.nanosToUltra(appData.loggedInUser.BalanceNanos)}} Ultra (= ~{{appData.nanosToUSD(appData.loggedInUser.BalanceNanos)}} USD)
+          </div>
+          <div class="btn btn-light yes"  (click)="_clickBuyUltra()">
+            <div class="divtext">
+              Buy Ultra
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!--View if the user is a merchant-->
+      <div *ngIf="appData.loggedInUser.MerchantEntry != null">
+        <!--Account Type field-->
+        <div class="field-container">
+          <!--This is the account type plus help text if necessary-->
+          <div class="label">
+            Account Type:
+          </div>
+          <div class="value">
+            merchant
+          </div>
+        </div>
+
+        <!--Username field-->
+        <div class="field-container">
+          <div class="label">
+            Username
+            <span (mouseenter)="showMerchantUsernameTooltip = true" (mouseleave)="showMerchantUsernameTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showMerchantUsernameTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                As a merchant, your username is associated with your reputation and is the main
+                way in which buyers will identify you. As such, your username must be globally unique across
+                all users.
+              </div>
+            </span>:
+          </div>
+          <div class="value">
+            <input placeholder="{{appData.loggedInUser.Username}}" type="text" [(ngModel)]="newMerchantUsername"/>
+          </div>
+          <div class="btn btn-light"  (click)="_resetFormFields()">
+            <div class="divtext">
+              Reset
+            </div>
+          </div>
+        </div>
+
+        <!--Description field-->
+        <div class="field-container description" style="height: auto;">
+          <div class="label">
+            Description
+            <div class="btn btn-light"  (click)="_resetFormFields()">
+              <div class="divtext">
+                Reset
+              </div>
+            </div>
+          </div>
+          <div class="value">
+            <textarea
+              rows="8" maxlength=1000
+              placeholder="{{appData.loggedInUser.MerchantEntry.Description}}"
+              [(ngModel)]="newMerchantDescription">
+            </textarea>
+          </div>
+        </div>
+
+        <!--Public key field-->
+        <div class="field-container">
+          <div class="label">
+            Public Key
+            <span (mouseenter)="showMerchantPublicKeyTooltip = true" (mouseleave)="showMerchantPublicKeyTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showMerchantPublicKeyTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                Your public key is used to sign all transactions you create and acts as part
+                of your identity as far as other users are concerned. If you want to create
+                a message and sign it, you can do that, among other things, on the Dashboard
+                page.
+              </div>
+            </span>:
+          </div>
+          <div *ngIf="appData != null && appData.loggedInUser != null" class="value public-key">
+            {{appData.loggedInUser.PublicKeyBase58Check}}
+          </div>
+          <div class="btn btn-light"  (click)="appData._copyText(appData.loggedInUser.PublicKeyBase58Check)">
+            <div class="divtext">
+              Copy
+            </div>
+          </div>
+          <!--<div class="btn btn-light"  (click)="_clickChangePublicKey()">-->
+            <!--<div class="divtext">-->
+              <!--Change Public Key-->
+            <!--</div>-->
+          <!--</div>-->
+        </div>
+
+        <!--MerchantID field-->
+        <div>
+          <div class="field-container">
+            <div class="label">
+              Merchant ID
+              <span (mouseenter)="showMerchantIDTooltip = true" (mouseleave)="showMerchantIDTooltip = false" class="info-tooltip">
+                (?)
+                <div *ngIf="showMerchantIDTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                  Once you are fully registered as a merchant, you receive a unique Merchant ID
+                  that is computed as the hash of the transaction you registered with.
+                  Although users will likely identify you by your username, blockchain code will
+                  tend to identify you by your ID. Note that, unlike your username or public key,
+                  once it is set, your Merchant ID can never change.
+                </div>
+              </span>:
+            </div>
+            <div class="value public-key">
+              {{appData.loggedInUser.MerchantEntry.MerchantIDBase58Check}}
+            </div>
+            <div class="btn btn-light"  (click)="appData._copyText(appData.loggedInUser.MerchantEntry.MerchantIDBase58Check)">
+              <div class="divtext">
+                Copy
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!--Burn Ultra field-->
+        <div class="field-container">
+          <div class="label">
+            Burn Ultra
+            <span (mouseenter)="showMerchantBurnFeeRateTooltip = true" (mouseleave)="showMerchantBurnFeeRateTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showMerchantBurnFeeRateTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                As a merchant, your reputation, which directly determines how high your listings
+                rank in search results and how willing users are to transact with you,
+                is a function of how much Ultra you have burned either explicitly or through
+                commissions over time.
+                Because of this, you can opt to explicitly burn some Ultra using this field to directly
+                boost your reputation and get more traffic to your listings.
+                <div *ngIf="appData.topMerchants != null">
+                  <div class="separator"></div>
+                  <!--For a merchant who is not in the top N-->
+                  <div *ngIf="appData.loggedInUser.MerchantEntry.MerchantRank >= appData.topMerchants.length">
+                    As a guide, your merchant rank is currently greater than {{appData.topMerchants.length}}, which is the maximum number
+                    of merchants a node will index.
+                    <li>
+                      To become a ranked top merchant whose listings show up in search results you would need to burn <span style="color: white;">{{
+                      appData.nanosToUltra(
+                        (appData.topMerchants[appData.topMerchants.length - 1].MerchantScore -
+                          appData.loggedInUser.MerchantEntry.MerchantScore) / appData.merchantScoreMultiplier)
+                      }}</span>  Ultra.
+                    </li>
+                    <li>
+                      To take <em>the top spot</em>, you would need to burn <span style="color: white;">{{
+                      appData.nanosToUltra(
+                        (appData.topMerchants[0].MerchantScore -
+                          appData.loggedInUser.MerchantEntry.MerchantScore) / appData.merchantScoreMultiplier)
+                      }}</span>  Ultra.
+                    </li>
+                  </div>
+
+                  <!--For a merchant who is in the top N-->
+                  <div *ngIf="appData.loggedInUser.MerchantEntry.MerchantRank < appData.topMerchants.length">
+                    As a guide, your rank among merchants is currently <em>{{appData.loggedInUser.MerchantEntry.MerchantRank + 1}}</em>  out of <em>{{appData.topMerchants.length}}</em>.
+                    <span *ngIf="appData.loggedInUser.MerchantEntry.MerchantRank === 0">
+                      You have the top spot; congratulations! 
+                    </span>
+                    <div *ngIf="appData.loggedInUser != null && appData.loggedInUser.MerchantEntry.MerchantRank !== 0">
+                      <ul>
+                        <li>
+                          To move up <em>one</em> rank, you would need to burn <span style="color: white;">{{
+                          appData.nanosToUltra(
+                            (appData.topMerchants[appData.loggedInUser.MerchantEntry.MerchantRank - 1].MerchantScore -
+                              appData.topMerchants[appData.loggedInUser.MerchantEntry.MerchantRank].MerchantScore+1) / appData.merchantScoreMultiplier)
+                          }}</span>  Ultra.
+                        </li>
+                        <li *ngIf="appData.loggedInUser.MerchantEntry.MerchantRank >= 10">
+                          To move up <em>ten</em> ranks, you would need to burn <span style="color: white;">{{
+                          appData.nanosToUltra(
+                            (appData.topMerchants[appData.loggedInUser.MerchantEntry.MerchantRank - 10].MerchantScore -
+                              appData.loggedInUser.MerchantEntry.MerchantScore+1) / appData.merchantScoreMultiplier)
+                          }}</span>  Ultra.
+                        </li>
+                        <li *ngIf="appData.loggedInUser.MerchantEntry.MerchantRank >= 100">
+                          To move up <em>one hundred</em> ranks, you would need to burn <span style="color: white;">{{
+                          appData.nanosToUltra(
+                            (appData.topMerchants[appData.loggedInUser.MerchantEntry.MerchantRank - 100].MerchantScore -
+                              appData.topMerchants[appData.loggedInUser.MerchantEntry.MerchantRank].MerchantScore+1) / appData.merchantScoreMultiplier)
+                          }}</span>  Ultra.
+                        </li>
+                        <li *ngIf="appData.loggedInUser.MerchantEntry.MerchantRank >= 1000">
+                          To move up <em>one thousand</em> ranks, you would need to burn <span style="color: white;">{{
+                          appData.nanosToUltra(
+                            (appData.topMerchants[appData.loggedInUser.MerchantEntry.MerchantRank - 1000].MerchantScore -
+                              appData.topMerchants[appData.loggedInUser.MerchantEntry.MerchantRank].MerchantScore+1) / appData.merchantScoreMultiplier)
+                          }}</span>  Ultra.
+                        </li>
+                        <li>
+                          To take <em>the top spot</em>, you would need to burn <span style="color: white;">{{
+                          appData.nanosToUltra(
+                            (appData.topMerchants[0].MerchantScore -
+                              appData.topMerchants[appData.loggedInUser.MerchantEntry.MerchantRank].MerchantScore+1) / appData.merchantScoreMultiplier)
+                          }}</span>  Ultra.
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </span>:
+          </div>
+          <div class="value">
+            <input type="number" [(ngModel)]="merchantBurnUltra"/>
+          </div>
+          <div class="help-text" style="padding: 0; margin: 0;">
+            Ultra (= ~{{appData.nanosToUSD(merchantBurnUltra * 1e9)}} USD)
+          </div>
+        </div>
+
+        <!--Network fee-->
+        <div class="field-container">
+          <div class="label">
+            Network Transaction Fee Rate (in Ultra per Kilobyte)
+            <span (mouseenter)="showUpdateMerchantFeeRateTooltip = true" (mouseleave)="showUpdateMerchantFeeRateTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showUpdateMerchantFeeRateTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                Updating merchant data requires writing data to the blockchain, which requires submitting a
+                transaction to the network.
+                Because the Ultranet is fully decentralized, transactions usually require a small transaction fee to
+                incentivize miners to process them in a timely manner (same as with Bitcoin). A transaction is
+                typically evaluated based on its "fee rate," which is the amount of Ultra it pays per kilobyte
+                of data it contains. The fee rate being used as the default here is based on the median of the
+                transaction fees set in the previous Ultra block, but you
+                can increase it if you want your transaction to process (aka "confirm") more quickly or decrease
+                it if you don't care when your transaction confirms. Just be careful not to set it too low or
+                else your transaction will be stuck in limbo for a long time. If you don't know what you're doing,
+                stick with the default. If you set it to a weird fee rate value and want to go back to the default, simply
+                hit "Reset Fee Rate" on the right. Most transactions are under a kilobyte and so the "total fee" for your order
+                placement should not exceed the "fee rate" specified in this field by much, if at all.
+              </div>
+            </span>
+          </div>
+          <div class="value">
+            <input type="number" [(ngModel)]="merchantFeeRateUltraPerKB"/>
+          </div>
+          <div class="help-text" style="padding: 0; margin: 0;">
+            Ultra/KB (= ~{{appData.nanosToUSD(merchantFeeRateUltraPerKB * 1e9)}} USD/KB)
+          </div>
+          <div (click)="_clickResetUpdateMerchantFeeRate()" class="btn btn-light" style="margin-left: .5rem;">
+            <div class="divtext">
+              Reset Fee Rate
+            </div>
+          </div>
+        </div>
+
+        <div class="field-container">
+          <div class="label">
+            Network Transaction Fee
+            <span (mouseenter)="showUpdateMerchantTotalFeeTooltip = true" (mouseleave)="showUpdateMerchantTotalFeeTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showUpdateMerchantTotalFeeTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                This value is simply the "fee rate" above multiplied by the size of your transaction in kilobytes.
+                Because the size of your transaction can change based on the values you set above, the network
+                fee can change as well (though it should generally be very low).
+              </div>
+            </span>:
+          </div>
+          <div class="value">
+            <span>{{appData.nanosToUltra(merchantTotalFeeNanos)}} Ultra</span>
+            <span style="margin-left: .5rem;">(= ~{{appData.nanosToUSD(merchantTotalFeeNanos)}} USD)</span>
+          </div>
+        </div>
+
+        <div class="field-container">
+          <div class="label">
+            Total Transaction Cost
+            <span (mouseenter)="showUpdateMerchantTotalCostTooltip = true" (mouseleave)="showUpdateMerchantTotalCostTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showUpdateMerchantTotalCostTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                The total cost for this transaction. Includes the burn amount and the total network fee.
+              </div>
+            </span>:
+          </div>
+          <div class="value">
+            <span>{{appData.nanosToUltra(
+              merchantBurnUltra*1e9 +
+              merchantTotalFeeNanos)}} Ultra</span>
+            <span style="margin-left: .5rem;">(= ~{{appData.nanosToUSD(
+              merchantBurnUltra*1e9 +
+              merchantTotalFeeNanos)}} USD)</span>
+          </div>
+        </div>
+
+        <!--TODO: Right now if the fee causes the total to go over, it's kindof hard to
+            tell from the error. The right thing is for the error to tell you how much
+            you've exceeded your balance. Same applies to updating the merchant.-->
+        <div *ngIf="merchantError !== ''" class="error">
+          {{merchantError}} 
+        </div>
+
+
+        <!--Button to update the merchant data-->
+        <div class="btn btn-light update-merchant-data" (click)="_clickUpdateMerchantData()">
+          <div class="divtext">
+            Update Merchant Data
+          </div>
+        </div>
+
+        <!--Merchant stats view-->
+        <div class="merchant-stats">
+          <div class="separating-line">
+          </div>
+
+          <!--Title-->
+          <div class="title">
+            Merchant Stats
+          </div>
+
+          <div *ngIf="appData.topMerchants == null" class="merchant-rank-label subcontent-text">
+            Loading... 
+          </div>
+          <div *ngIf="appData.topMerchants != null">
+            <div class="merchant-rank-label subcontent-text">
+              <div>
+                Merchant Rank: <span style="font-weight: normal">#{{appData.loggedInUser.MerchantEntry.MerchantRank+1}} / {{appData.topMerchants.length}}</span>
+              </div>
+              <div>
+                Merchant Score
+                <span (mouseenter)="showMerchantScoreTooltipSingle = true" (mouseleave)="showMerchantScoreTooltipSingle = false" class="info-tooltip">
+                  (?)
+                  <div *ngIf="showMerchantScoreTooltipSingle" class="info-tooltip-contents" style="left: 2rem; right: auto; bottom: 0; top: auto;">
+                    Total sales and positive reviews can be faked, for example by a merchant constantly transacting with herself. The Merchant Score is robust to this
+                    type of gaming, however, and so we use it as the core ranking metric. To learn about how your node computes the Merchant Score, visit ultranet.one.
+                  </div>
+                </span>:
+                <span style="font-weight: normal">{{appData.loggedInUser.MerchantEntry.MerchantScore}}</span>
+              </div>
+              <div *ngIf="appData.loggedInUser.MerchantEntry.TotalSalesNanos === 0" style="color: white;">
+                No sales yet 
+              </div>
+              <div *ngIf="appData.loggedInUser.MerchantEntry.TotalSalesNanos !== 0">
+                <div>
+                  Total Sales: <span style="font-weight: normal">{{appData.nanosToUltra(appData.loggedInUser.MerchantEntry.TotalSalesNanos)}} Ultra (=100%)</span>
+                  <span (mouseenter)="showTotalSalesTooltipSingle = true" (mouseleave)="showTotalSalesTooltipSingle = false" class="info-tooltip">
+                    (?)
+                    <div *ngIf="showTotalSalesTooltipSingle" class="info-tooltip-contents" style="right: 1rem; left: auto;">
+                      Even though total sales and positive reviews can be faked by a merchant, users still
+                      like to see a breakdown of a merchant's activity so we show it here. Just keep in mind that the
+                      Merchant Score is ultimately the only reliable way to compare merchants.
+                    </div>
+                  </span>
+                </div>
+                <div style="margin-left: 1rem;">
+                  <div>
+                    In-Flight: <span style="font-weight: normal">{{appData.nanosToUltra(appData.loggedInUser.MerchantEntry.Stats.RevenueConfirmedNanos)}} (={{(appData.loggedInUser.MerchantEntry.Stats.RevenueConfirmedNanos / appData.loggedInUser.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                  </div>
+                  <div>
+                    Positive: <span style="font-weight: normal">{{appData.nanosToUltra(appData.loggedInUser.MerchantEntry.Stats.RevenuePositiveNanos)}} (={{(appData.loggedInUser.MerchantEntry.Stats.RevenuePositiveNanos / appData.loggedInUser.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                  </div>
+                  <div>
+                    Neutral: <span style="font-weight: normal">{{appData.nanosToUltra(appData.loggedInUser.MerchantEntry.Stats.RevenueNeutralNanos)}}  (={{(appData.loggedInUser.MerchantEntry.Stats.RevenueNeutralNanos / appData.loggedInUser.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                  </div>
+                  <div>
+                    Negative: <span style="font-weight: normal">{{appData.nanosToUltra(appData.loggedInUser.MerchantEntry.Stats.RevenueNegativeNanos)}}  (={{(appData.loggedInUser.MerchantEntry.Stats.RevenueNegativeNanos / appData.loggedInUser.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                  </div>
+                  <div>
+                    Unreviewed: <span style="font-weight: normal">{{appData.nanosToUltra(appData.loggedInUser.MerchantEntry.Stats.RevenueFulfilledNanos)}} (={{(appData.loggedInUser.MerchantEntry.Stats.RevenueFulfilledNanos / appData.loggedInUser.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!--Merchant Rank-->
+          <!--<div class="field-container">-->
+            <!--<div class="label">-->
+              <!--Merchant Rank:-->
+            <!--</div>-->
+            <!--<div class="value">-->
+              <!--#{{appData.loggedInUser.MerchantEntry.MerchantRank}} of todo-->
+              <!--[>{{appData.loggedInUser.merchantStats.totalMerchants}}<]-->
+            <!--</div>-->
+          <!--</div>-->
+          <!--[>Total Sales<]-->
+          <!--<div class="field-container">-->
+            <!--<div class="label">-->
+              <!--Total Sales:-->
+            <!--</div>-->
+            <!--<div class="value">-->
+              <!--{{((appData.loggedInUser.merchantStats.totalSalesNanos) / 1e9).toFixed(9)}} Ultra (= 100%)-->
+            <!--</div>-->
+          <!--</div>-->
+          <!--<div class="subfields">-->
+            <!--[>Total Confirmed sales<]-->
+            <!--<div class="field-container">-->
+              <!--<div class="label">-->
+                <!--Total Confirmed Sales:-->
+              <!--</div>-->
+              <!--<div class="value">-->
+                <!--{{(appData.loggedInUser.merchantStats.totalConfirmedSalesNanos / 1e9).toFixed(9)}}-->
+                <!--({{(appData.loggedInUser.merchantStats.totalConfirmedSalesNanos / appData.loggedInUser.merchantStats.totalSalesNanos * 100).toFixed(2)}}%)-->
+              <!--</div>-->
+            <!--</div>-->
+            <!--[>Total revenue<]-->
+            <!--<div class="subfields">-->
+              <!--<div class="field-container">-->
+                <!--<div class="label">-->
+                  <!--Commissions:-->
+                <!--</div>-->
+                <!--<div class="value">-->
+                  <!--{{((appData.loggedInUser.merchantStats.commissionsNanos) / 1e9).toFixed(9)}}-->
+                  <!--({{((appData.loggedInUser.merchantStats.commissionsNanos) / appData.loggedInUser.merchantStats.totalConfirmedSalesNanos * 100).toFixed(2)}}%)-->
+                <!--</div>-->
+              <!--</div> -->
+              <!--<div class="field-container">-->
+                <!--<div class="label">-->
+                  <!--Revenue:-->
+                <!--</div>-->
+                <!--<div class="value">-->
+                  <!--{{((appData.loggedInUser.merchantStats.totalRevenueNanos) / 1e9).toFixed(9)}}-->
+                  <!--({{((appData.loggedInUser.merchantStats.totalRevenueNanos) / appData.loggedInUser.merchantStats.totalConfirmedSalesNanos * 100).toFixed(2)}}%)-->
+                <!--</div>-->
+              <!--</div> -->
+              <!--<div class="subfields">-->
+                <!--[>Positive revenue<]-->
+                <!--<div class="field-container">-->
+                  <!--<div class="label">-->
+                    <!--Positive Revenue:-->
+                  <!--</div>-->
+                  <!--<div class="value">-->
+                    <!--{{(appData.loggedInUser.merchantStats.revenuePositiveNanos / 1e9).toFixed(9)}}-->
+                    <!--({{((appData.loggedInUser.merchantStats.revenuePositiveNanos / (appData.loggedInUser.merchantStats.totalRevenueNanos)) * 100).toFixed(2)}})%-->
+                  <!--</div>-->
+                <!--</div>-->
+                <!--[>Non-positive revenue<]-->
+                <!--<div class="field-container">-->
+                  <!--<div class="label">-->
+                    <!--Non-Positive Revenue:-->
+                  <!--</div>-->
+                  <!--<div class="value">-->
+                    <!--{{(appData.loggedInUser.merchantStats.nonPositiveRevenueNanos / 1e9).toFixed(9)}}-->
+                    <!--({{((appData.loggedInUser.merchantStats.nonPositiveRevenueNanos / (appData.loggedInUser.merchantStats.totalRevenueNanos)) * 100).toFixed(2)}})%-->
+                  <!--</div>-->
+                <!--</div>-->
+                <!--[>Subfields of non-positive sales<]-->
+                <!--<div class="subfields">-->
+                  <!--[>In-flight revenue<]-->
+                  <!--<div class="field-container">-->
+                    <!--<div class="label">-->
+                      <!--In-Flight Revenue: -->
+                    <!--</div>-->
+                    <!--<div class="value">-->
+                      <!--{{(appData.loggedInUser.merchantStats.revenueConfirmedNanos / 1e9).toFixed(9)}}-->
+                      <!--({{(appData.loggedInUser.merchantStats.revenueConfirmedNanos / appData.loggedInUser.merchantStats.nonPositiveRevenueNanos * 100).toFixed(2)}}%)-->
+                    <!--</div>-->
+                  <!--</div>-->
+                  <!--[>Fulfilled unreviewed revenue<]-->
+                  <!--<div class="field-container">-->
+                    <!--<div class="label">-->
+                      <!--Fulfilled Unreviewed Revenue: -->
+                    <!--</div>-->
+                    <!--<div class="value">-->
+                      <!--{{(appData.loggedInUser.merchantStats.revenueFulfilledNanos / 1e9).toFixed(9)}}-->
+                      <!--({{(appData.loggedInUser.merchantStats.revenueFulfilledNanos / appData.loggedInUser.merchantStats.nonPositiveRevenueNanos * 100).toFixed(2)}}%)-->
+                    <!--</div>-->
+                  <!--</div>-->
+                  <!--[>Neutral revenue<]-->
+                  <!--<div class="field-container">-->
+                    <!--<div class="label">-->
+                      <!--Neutral Revenue: -->
+                    <!--</div>-->
+                    <!--<div class="value">-->
+                      <!--{{(appData.loggedInUser.merchantStats.revenueNeutralNanos / 1e9).toFixed(9)}}-->
+                      <!--({{(appData.loggedInUser.merchantStats.revenueNeutralNanos / appData.loggedInUser.merchantStats.nonPositiveRevenueNanos * 100).toFixed(2)}}%)-->
+                    <!--</div>-->
+                  <!--</div>-->
+                  <!--[>Negative revenue<]-->
+                  <!--<div class="field-container">-->
+                    <!--<div class="label">-->
+                      <!--Negative Revenue: -->
+                    <!--</div>-->
+                    <!--<div class="value">-->
+                      <!--{{(appData.loggedInUser.merchantStats.revenueNegativeNanos / 1e9).toFixed(9)}}-->
+                      <!--({{(appData.loggedInUser.merchantStats.revenueNegativeNanos / appData.loggedInUser.merchantStats.nonPositiveRevenueNanos * 100).toFixed(2)}}%)-->
+                    <!--</div>-->
+                  <!--</div>-->
+                  <!--[>Refunded revenue<]-->
+                  <!--<div class="field-container">-->
+                    <!--<div class="label">-->
+                      <!--Refunded Revenue: -->
+                    <!--</div>-->
+                    <!--<div class="value">-->
+                      <!--{{(appData.loggedInUser.merchantStats.revenueRefundedNanos / 1e9).toFixed(9)}}-->
+                      <!--({{(appData.loggedInUser.merchantStats.revenueRefundedNanos / appData.loggedInUser.merchantStats.nonPositiveRevenueNanos * 100).toFixed(2)}}%)-->
+                    <!--</div>-->
+                  <!--</div>-->
+                <!--</div>-->
+              <!--</div>-->
+            <!--</div>-->
+            <!--[>Total unconfirmed sales<]-->
+            <!--<div class="field-container">-->
+              <!--<div class="label">-->
+                <!--Total Unconfirmed Sales:-->
+              <!--</div>-->
+              <!--<div class="value">-->
+                <!--{{(appData.loggedInUser.merchantStats.totalUnconfirmedSalesNanos / 1e9).toFixed(9)}}-->
+                <!--({{(appData.loggedInUser.merchantStats.totalUnconfirmedSalesNanos / appData.loggedInUser.merchantStats.totalSalesNanos * 100).toFixed(2)}}%)-->
+              <!--</div>-->
+            <!--</div>-->
+            <!--<div class="subfields">-->
+              <!--[>Placed Sales<]-->
+              <!--<div class="field-container">-->
+                <!--<div class="label">-->
+                  <!--Placed Order Value: -->
+                <!--</div>-->
+                <!--<div class="value">-->
+                  <!--{{(appData.loggedInUser.merchantStats.paymentPlacedNanos / 1e9).toFixed(9)}}-->
+                  <!--({{(appData.loggedInUser.merchantStats.paymentPlacedNanos / appData.loggedInUser.merchantStats.totalUnconfirmedSalesNanos * 100).toFixed(2)}}%)-->
+                <!--</div>-->
+              <!--</div>-->
+              <!--[>Canceled Sales<]-->
+              <!--<div class="field-container">-->
+                <!--<div class="label">-->
+                  <!--Canceled Order Value: -->
+                <!--</div>-->
+                <!--<div class="value">-->
+                  <!--{{(appData.loggedInUser.merchantStats.paymentCanceledNanos / 1e9).toFixed(9)}}-->
+                  <!--({{(appData.loggedInUser.merchantStats.paymentCanceledNanos / appData.loggedInUser.merchantStats.totalUnconfirmedSalesNanos * 100).toFixed(2)}}%)-->
+                <!--</div>-->
+              <!--</div>-->
+              <!--[>Rejected Sales<]-->
+              <!--<div class="field-container">-->
+                <!--<div class="label">-->
+                  <!--Rejected Order Value: -->
+                <!--</div>-->
+                <!--<div class="value">-->
+                  <!--{{(appData.loggedInUser.merchantStats.paymentRejectedNanos / 1e9).toFixed(9)}}-->
+                  <!--({{(appData.loggedInUser.merchantStats.paymentRejectedNanos / appData.loggedInUser.merchantStats.totalUnconfirmedSalesNanos * 100).toFixed(2)}}%)-->
+                <!--</div>-->
+              <!--</div>-->
+
+            <!--</div>-->
+            
+          <!--</div>-->
+          <!--[>Amount Burned<]-->
+          <!--<div class="field-container">-->
+            <!--<div class="label">-->
+              <!--Amount Burned:-->
+            <!--</div>-->
+            <!--<div class="value">-->
+              <!--{{((appData.loggedInUser.merchantStats.amountBurnedNanos) / 1e9).toFixed(9)}} Ultra-->
+              <!--(= {{(appData.loggedInUser.merchantStats.amountBurnedNanos / appData.loggedInUser.merchantStats.totalSalesNanos * 100).toFixed(2)}}% of total sales)-->
+            <!--</div>-->
+          <!--</div>-->
+
+        </div>
+
+      </div>
+
+      <!--A line separating logged-in user info from the accounts info-->
+      <!--Only needed if we have logged-in user info-->
+      <div class="separating-line">
+      </div>
+    </div> 
+  </div>
+  <div *ngIf="appData.loggedInUser == null">
+    <div class="title">
+      No Logged-In User
+    </div>
+    <div class="help-text normal-text" style="margin-left: 0; padding-left: 0; margin-top: .5rem;">
+      There is no user currently logged in. Create an account or login an existing user to
+      be able to place orders, create listings, etc..
+    </div>
+  </div>
+      
+
+  <!--View showing information on other users-->
+  <div *ngIf="appData.userList != null && appData.userList.length > 0" class="accounts-list">
+    <div class="title">
+      <div *ngIf="appData.accountPageState.showAccountsList === true" (click)="appData.accountPageState.showAccountsList=false" class="minus">-</div>
+      <div *ngIf="appData.accountPageState.showAccountsList === false" (click)="appData.accountPageState.showAccountsList=true" class="minus">+</div>
+      Accounts List
+    </div>
+    <div *ngIf="appData.accountPageState.showAccountsList">
+
+      <div class="field-container" style="margin-top: 0;">
+        <div class="label">
+          Filter:
+        </div>
+        <div class="value">
+          <input [(ngModel)]="accountFilter" type="text"/>
+        </div>
+      </div>
+
+      <div *ngFor="let user of appData.userList; index as userIndex">
+        <div class="account-entry-container" *ngIf="accountFilter == null || accountFilter === '' || (user.PublicKeyBase58Check.toLowerCase().includes(accountFilter.toLowerCase()) || user.Username.toLowerCase().includes(accountFilter.toLowerCase()))">
+
+          <div class="field username" style="width: 20rem;">
+            {{user.Username.slice(0, 25)}}<span *ngIf="user.Username.length > 25">...</span>
+          </div>
+          <br>
+          <div class="field" style="width: 5rem;">
+            {{user.MerchantEntry != null ? "merchant" : "buyer"}}
+          </div>
+          <div class="field" style="width: 38rem;">
+            {{user.PublicKeyBase58Check}}
+            <div class="btn btn-light"  (click)="appData._copyText(user.PublicKeyBase58Check)" style="margin-right: 0; margin-left: .5rem;">
+              <div class="divtext">
+                Copy
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            {{appData.nanosToUltra(user.BalanceNanos)}} Ultra (= ~{{appData.nanosToUSD(user.BalanceNanos)}} USD)
+          </div>
+
+          <div class="field-container">
+            <div class="label">
+              Password
+              <span (mouseenter)="showUpdateMerchantPasswordTooltipIndex = userIndex" (mouseleave)="showUpdateMerchantPasswordTooltipIndex = -1" class="info-tooltip">
+                (?)
+                <div *ngIf="showUpdateMerchantPasswordTooltipIndex === userIndex" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                  If you have a password set for this account, you must enter it here in order to be able to login
+                  as this user. If you have no password set then you can leave this field blank.
+                </div>
+              </span>:
+            </div>
+            <div class="value">
+              <input [(ngModel)]="loginPasswords[userIndex]" type="text"/>
+            </div>
+          </div>
+          <div>
+            <div class="btn btn-light"  (click)="_clickLoginAsUser(user, userIndex)">
+              <div class="divtext">
+                Login as User
+              </div>
+            </div>
+            <div class="btn btn-light no"  (click)="_clickDeleteAccount(user)">
+              <div class="divtext">
+                Delete Account
+              </div>
+            </div>
+          </div>
+          
+        </div>
+
+      </div> 
+    </div>
+    
+  </div>
+</div>
+
+<!--Everything within this div is for the load account from seed flow-->
+<div class="create-merchant">
+  <div *ngIf="viewShowing === ViewShowing.LoadAccountFromSeed">
+    <div class="title">
+      Load Account from Seed
+    </div>
+
+    <div class="help-text normal-text" style="margin-left: 0; padding-left: 0; margin-bottom: 1rem;">
+      Enter your seed phrase as well as any "Extra Text" if you have any. Note that if
+      you did not create your account using an advanced configuration then you will not
+      have any "Extra Text" to set.
+    </div>
+
+    <div class="input-container">
+      <div class="form-label">
+        Seed Phrase:
+      </div>
+      <textarea placeholder="Enter seed phrase here." [(ngModel)]="loginSeedText" cols=60, rows=5>
+      </textarea>
+    </div>
+
+    <div class="input-container">
+      <div class="form-label">
+        Extra Text (include spaces):
+      </div>
+      <textarea placeholder="Enter extra text here. Note you won't have any unless you did an advanced configuration." [(ngModel)]="loginExtraText" cols=60, rows=5>
+      </textarea>
+    </div>
+
+    <div class="help-text normal-text" style="margin-left: 0; padding-left: 0; margin-bottom: 1rem;">
+      Set a password for your account so that we can encrypt your private key before
+      we store it. Note that not setting a password means that your private key
+      will be stored in plaintext on disk, which means that if someone
+      compromises your machine either physically or through remote hacking that they
+      will be able to gain control of your account. If you'd still prefer to not
+      have a password, leave the field blank.
+    </div>
+
+    <div class="input-container">
+      <div class="form-label">
+        Password (leave blank if you don't want to set a password):
+      </div>
+      <input [(ngModel)]="loginPassword">
+    </div>
+    <div class="input-container">
+      <div class="form-label">
+        Confirm Password:
+      </div>
+      <input [(ngModel)]="loginPasswordConfirm">
+    </div>
+
+    <div class="help-text normal-text" style="margin-left: 0; padding-left: 0; margin-top: 1rem;">
+      Enter a username for this account. Must be different from the usernames you've set
+      for all your other accounts.
+    </div>
+    <div class="input-container">
+      <div class="form-label">
+        Username:
+      </div>
+      <input [(ngModel)]="loginUsername">
+    </div>
+
+    <div class="next-back-container">
+      <div class="btn btn-light"  (click)="backPressed()">
+        <div class="divtext">
+          Back
+        </div>
+      </div>
+      <div class="btn btn-light"  (click)="nextPressed()">
+        <div class="divtext">
+          Next
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!--Everything within this div is for the create merchant flow-->
+<div class="create-merchant">
+  <div *ngIf="viewShowing === ViewShowing.EnterNewMerchantInfo">
+    <div class="title">
+      Merchant Registration
+    </div>
+    <div *ngIf="appData.loggedInUser == null" class="normal-text" style="margin-top: .5rem; margin-bottom: 1rem;">
+      No user is logged in. Go back and create an account or login.
+    </div>
+    <div *ngIf="appData.loggedInUser != null">
+
+      <!--Username field-->
+      <div class="field-container">
+        <div class="label">
+          Username
+          <span (mouseenter)="showAboutUsernameNonMerchantTooltip = true" (mouseleave)="showAboutUsernameNonMerchantTooltip = false" class="info-tooltip">
+            (?)
+            <div *ngIf="showAboutUsernameNonMerchantTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+              As a merchant, your username is associated with your reputation and is the main
+              way in which buyers will identify you. As such, your username must be globally unique
+              across all users.
+            </div>
+          </span>:
+        </div>
+        <div class="value">
+          <input maxlength=120 placeholder="{{appData.loggedInUser.Username}}" type="text" [(ngModel)]="newMerchantUsername"/>
+        </div>
+        <div class="btn btn-light random-username"  (click)="newMerchantUsername = this._randomUsername()">
+          <div class="divtext">
+            Random Username
+          </div>
+        </div>
+      </div>
+
+      <!--Description field-->
+      <div class="field-container description" style="height: auto;">
+        <div class="label">
+          Description
+          <span (mouseenter)="showAboudDescriptionRegisterMerchant = true" (mouseleave)="showAboudDescriptionRegisterMerchant = false" class="info-tooltip">
+            (?)
+            <div *ngIf="showAboudDescriptionRegisterMerchant" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+              As a merchant, your description should tell users what to expect from interacting with you.
+            </div>
+          </span>:
+        </div>
+        <div class="value">
+          <textarea
+            rows="8" maxlength=1000
+            placeholder="Describe yourself. This message will appear on your merchant profile."
+            [(ngModel)]="newMerchantDescription">
+          </textarea>
+        </div>
+      </div>
+
+      <!--Public key field-->
+      <div class="field-container">
+        <div class="label">
+          Public Key
+          <span (mouseenter)="showCreateMerchantPublicKeyTooltip = true" (mouseleave)="showCreateMerchantPublicKeyTooltip = false" class="info-tooltip">
+            (?)
+            <div *ngIf="showCreateMerchantPublicKeyTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+              Your public key is used to sign all transactions you create and acts as part
+              of your identity as far as other users are concerned. If you want to create
+              a message and sign it, you can do that, among other things, on the Dashboard
+              page.
+            </div>
+          </span>:
+        </div>
+        <div class="value dull">
+          {{appData.loggedInUser.PublicKeyBase58Check}}
+        </div>
+        <div class="btn btn-light"  (click)="appData._copyText(appData.loggedInUser.PublicKeyBase58Check)">
+          <div class="divtext">
+            Copy
+          </div>
+        </div>
+      </div>
+
+      <!--Burn Ultra field-->
+      <div class="field-container">
+        <div class="label">
+          Burn Ultra
+          <span (mouseenter)="showMerchantBurnFeeRateTooltip = true" (mouseleave)="showMerchantBurnFeeRateTooltip = false" class="info-tooltip">
+            (?)
+            <div *ngIf="showMerchantBurnFeeRateTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+              As a merchant, your reputation, which directly determines how high your listings
+              rank in search results and how willing users are to transact with you,
+              is a function of how much Ultra you have burned either explicitly or through
+              commissions over time.
+              Because of this, you can opt to explicitly burn some Ultra using this field to directly
+              boost your reputation and get more traffic to your listings.
+              <div class="separator"></div>
+              <!--For a merchant who is not in the top N-->
+              <div>
+                As a guide, there are currently {{appData.topMerchants.length}}, merchants so if you burn nothing
+                you will rank behind them.
+                  To take <em>the top spot</em>, you would need to burn <span style="color: white;">{{
+                  appData.nanosToUltra(
+                    (appData.topMerchants[0].MerchantScore) / appData.merchantScoreMultiplier)
+                  }}</span>  Ultra.
+              </div>
+            </div>
+          </span>:
+        </div>
+        <div class="value">
+          <input type="number" [(ngModel)]="merchantBurnUltra"/>
+        </div>
+        <div class="help-text" style="padding: 0; margin: 0;">
+          Ultra (= ~{{appData.nanosToUSD(merchantBurnUltra * 1e9)}} USD)
+        </div>
+      </div>
+
+      <!--Network fee-->
+      <div class="field-container">
+        <div class="label">
+          Network Transaction Fee Rate (in Ultra per Kilobyte)
+          <span (mouseenter)="showUpdateMerchantFeeRateTooltip = true" (mouseleave)="showUpdateMerchantFeeRateTooltip = false" class="info-tooltip">
+            (?)
+            <div *ngIf="showUpdateMerchantFeeRateTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+              Registering as a merchant requires writing data to the blockchain, which requires submitting a
+              transaction to the network.
+              Because the Ultranet is fully decentralized, transactions usually require a small transaction fee to
+              incentivize miners to process them in a timely manner (same as with Bitcoin). A transaction is
+              typically evaluated based on its "fee rate," which is the amount of Ultra it pays per kilobyte
+              of data it contains. The fee rate being used as the default here is based on the median of the
+              transaction fees set in the previous Ultra block, but you
+              can increase it if you want your transaction to process (aka "confirm") more quickly or decrease
+              it if you don't care when your transaction confirms. Just be careful not to set it too low or
+              else your transaction will be stuck in limbo for a long time. If you don't know what you're doing,
+              stick with the default. If you set it to a weird fee rate value and want to go back to the default, simply
+              hit "Reset Fee Rate" on the right. Most transactions are under a kilobyte and so the "total fee" for your order
+              placement should not exceed the "fee rate" specified in this field by much, if at all.
+            </div>
+          </span>
+        </div>
+        <div class="value">
+          <input type="number" [(ngModel)]="merchantFeeRateUltraPerKB"/>
+        </div>
+        <div class="help-text" style="padding: 0; margin: 0;">
+          Ultra/KB (= ~{{appData.nanosToUSD(merchantFeeRateUltraPerKB * 1e9)}} USD/KB)
+        </div>
+        <div (click)="_clickResetUpdateMerchantFeeRate()" class="btn btn-light" style="margin-left: .5rem;">
+          <div class="divtext">
+            Reset Fee Rate
+          </div>
+        </div>
+      </div>
+
+      <div class="field-container">
+        <div class="label">
+          Network Transaction Fee
+          <span (mouseenter)="showUpdateMerchantTotalFeeTooltip = true" (mouseleave)="showUpdateMerchantTotalFeeTooltip = false" class="info-tooltip">
+            (?)
+            <div *ngIf="showUpdateMerchantTotalFeeTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+              This value is simply the "fee rate" above multiplied by the size of your transaction in kilobytes.
+              Because the size of your transaction can change based on the values you set above, the network
+              fee can change as well (though it should generally be very low).
+            </div>
+          </span>:
+        </div>
+        <div class="value">
+          <span>{{appData.nanosToUltra(merchantTotalFeeNanos)}} Ultra</span>
+          <span style="margin-left: .5rem;">(= ~{{appData.nanosToUSD(merchantTotalFeeNanos)}} USD)</span>
+        </div>
+      </div>
+
+      <div class="field-container">
+        <div class="label">
+          Total Transaction Cost
+          <span (mouseenter)="showUpdateMerchantTotalCostTooltip = true" (mouseleave)="showUpdateMerchantTotalCostTooltip = false" class="info-tooltip">
+            (?)
+            <div *ngIf="showUpdateMerchantTotalCostTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+              The total cost for this transaction. Includes the burn amount and the total network fee.
+            </div>
+          </span>:
+        </div>
+        <div class="value">
+          <span>{{appData.nanosToUltra(
+            merchantBurnUltra*1e9 +
+            merchantTotalFeeNanos)}} Ultra</span>
+          <span style="margin-left: .5rem;">(= ~{{appData.nanosToUSD(
+            merchantBurnUltra*1e9 +
+            merchantTotalFeeNanos)}} USD)</span>
+        </div>
+      </div>
+
+      <div *ngIf="merchantError !== ''" class="error">
+        {{merchantError}} 
+      </div>
+ 
+    </div>
+
+    <!--Button to update the merchant data-->
+    <div class="bottom-button-container">
+      <div class="btn btn-light"  (click)="backPressed()">
+        <div class="divtext">
+          Back
+        </div>
+      </div>
+      <div class="btn btn-light"  (click)="_clickRegisterMerchant()">
+        <div class="divtext">
+          Register as Merchant
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!--Everything within this div is for the create user flow.-->
+<!--It shows up only when viewShowing != None-->
+<div class="create-user">
+  <!--The form for entering account info (username)-->
+  <div class="enter-account-info needs-basic-form" *ngIf="viewShowing === ViewShowing.EnterNewAccountInfo">
+    <div class="title">
+      Creating Account
+    </div>
+    <div class="help-text normal-text">
+      Choose a unique username. Don't worry, you can easily change this later.
+    </div>
+
+    <div class="input-container">
+      <div class="form-label">
+        Username*:
+      </div>
+      <input maxlength=120 placeholder="sarahc0nn0r" type="text" [(ngModel)]="createUserUsername"/>
+      <div class="btn btn-light random-username"  (click)="this.createUserUsername = this._randomUsername()">
+        <div class="divtext">
+          Random Username
+        </div>
+      </div>
+    </div>
+
+    <div class="help-text normal-text">
+      If an eligible user referred you to the Ultranet, you can enter their public key
+      below to get 20% off all orders for a limited time. If you don't have a referrer,
+      you can enter sarah's public key, which can be found at the bottom of the
+      ultranet.one web page, and still enjoy a 20% discount for a limited time.
+    </div>
+
+    <div class="input-container">
+      <div class="form-label">
+        Referrer Public Key:
+      </div>
+      <input maxlength=120 placeholder="Enter a referrer public key..." type="text" [(ngModel)]="createUserReferralPublicKey"/>
+    </div>
+
+    <div style="margin-top: 1rem;">
+      <div class="form-label">
+        * = Required field.
+      </div>
+    </div>
+
+    <div class="next-back-container">
+      <div class="btn btn-light"  (click)="backPressed()">
+        <div class="divtext">
+          Back
+        </div>
+      </div>
+      <div class="btn btn-light"  (click)="nextPressed()">
+        <div class="divtext">
+          Next
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--The form for generating and modifying a seed-->
+  <div class="copy-seed" *ngIf="viewShowing === ViewShowing.CopySeed">
+    <div class="title">
+      Creating Account
+    </div>
+
+    <app-entropy-generator [temporaryEntropy]="temporaryEntropy">
+    </app-entropy-generator>
+
+    <div class="next-back-container">
+      <div class="btn btn-light"  (click)="backPressed()">
+        <div class="divtext">
+          Back
+        </div>
+      </div>
+      <div class="btn btn-light"  (click)="nextPressed()">
+        <div class="divtext">
+          Next
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--The form for verifying a seed-->
+  <div class="verify-seed needs-basic-form" *ngIf="viewShowing === ViewShowing.VerifySeed">
+    <div class="title">
+      Creating Account
+    </div>
+    <div class="help-text normal-text">
+      Enter your seed phrase from the previous step for verification or skip this step at your own risk.
+    </div>
+
+    <div class="input-container">
+      <div class="form-label">
+        Seed Phrase:
+      </div>
+      <textarea placeholder="Enter seed phrase here." [(ngModel)]="mnemonicVerificationText" cols=60, rows=5>
+      </textarea>
+    </div>
+
+    <div *ngIf="temporaryEntropy != null && temporaryEntropy.value != null && temporaryEntropy.value.extraText !== ''">
+      <div class="input-container">
+        <div class="form-label">
+          Extra Text:
+        </div>
+        <textarea [(ngModel)]="mnemonicExtraTextVerification"
+            (change)="mnemonicExtraTextVerification = mnemonicExtraTextVerification.normalize('NFKD')" cols=60, rows=5>
+        </textarea>
+      </div>
+    </div>
+
+    <div class="next-back-container">
+      <div class="btn btn-light"  (click)="backPressed()">
+        <div class="divtext">
+          Back
+        </div>
+      </div>
+      <div class="btn btn-light"  (click)="nextPressed('skip')">
+        <div class="divtext">
+          Skip
+        </div>
+      </div>
+      <div class="btn btn-light"  (click)="nextPressed()">
+        <div class="divtext">
+          Next
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--Form for entering a password for a user-->
+  <div class="needs-basic-form" *ngIf="viewShowing === ViewShowing.EnterPassword">
+    <div class="title">
+      Creating Account
+    </div>
+    <div class="help-text normal-text">
+      Enter a password that will be used to encrypt your seed. If you don't do this,
+      your seed will effectively be stored on disk unencrypted in plaintext, which means if someone
+      were to gain access to your computer, either physically or through remote hacking,
+      they would have full control over your account. Remember also that you can always
+      recover your account from your seed phrase, even if you've forgotten your password.
+    </div>
+    <div class="subtitle-container">
+      <div class="subtitle">
+        Enter a Password (Optional)
+      </div>
+    </div>
+
+    <div class="input-container">
+      <div class="form-label">
+        Password:
+      </div>
+      <input [(ngModel)]="tempPassword">
+    </div>
+    <div class="input-container">
+      <div class="form-label">
+        Confirm Password:
+      </div>
+      <input [(ngModel)]="tempPasswordVerification">
+    </div>
+
+    <div class="next-back-container">
+      <div class="btn btn-light"  (click)="backPressed()">
+        <div class="divtext">
+          Back
+        </div>
+      </div>
+      <div class="btn btn-light"  (click)="nextPressed('skip')">
+        <div class="divtext">
+          Skip
+        </div>
+      </div>
+      <div class="btn btn-light"  (click)="nextPressed()">
+        <div class="divtext">
+          Next
+        </div>
+      </div>
+    </div>
+  </div>
+    
+<!--End of the create user flow-->
+</div>
+
+<div style="height: 2rem;">
+</div>

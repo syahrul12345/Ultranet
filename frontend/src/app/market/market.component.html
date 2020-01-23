@@ -1,0 +1,1341 @@
+  <div class="market-left-container">
+    <div class="market-widget-container">
+
+      <!--No logged-in user-->
+      <div *ngIf="appData.loggedInUser == null">
+        <div class="market-widget-heading" style="margin-bottom: -.5rem">
+          No Account Info
+        </div>
+        <div class="market-widget-heading" style="margin-bottom: .75rem">
+          <div (click)="_clickCreateAccountOrLogin()" class="market-widget-link">create account or login</div>
+        </div>
+        <div class="market-widget-info">
+          Useful account information such as username, public key, and balance will show up here once you've created an account or logged in. 
+        </div>
+      </div>
+
+      <!--Logged in user-->
+      <div *ngIf="appData.loggedInUser != null">
+        <div class="market-widget-field-heading" style="text-align: center;">
+          Account Info 
+        </div>
+
+        <!--If merchant, use merchant username-->
+        <div *ngIf="appData.loggedInUser.MerchantEntry != null">
+          <div class="market-widget-field-heading">
+            Merchant Username
+          </div>
+          <div class="market-widget-field-value" style="color: white;">
+            {{appData.loggedInUser.Username}}
+          </div>
+        </div>
+        <div *ngIf="appData.loggedInUser.MerchantEntry == null">
+          <div class="market-widget-field-heading">
+            Buyer Username (<div (click)="_clickCreateAccountOrLogin()" class="market-widget-field-link">become a merchant</div>)
+          </div>
+          <div class="market-widget-field-value" style="color: white;">
+            {{appData.loggedInUser.Username}}
+          </div>
+        </div>
+        
+        <!--Public key-->
+        <div class="market-widget-field-heading">
+          Public Key
+          <div class="btn btn-light copy-public-key"  (click)="appData._copyText(appData.loggedInUser.PublicKeyBase58Check)">
+            <div class="divtext">
+              copy
+            </div>
+          </div>
+        </div>
+        <div class="market-widget-field-small" style="color: white;">
+          {{appData.loggedInUser.PublicKeyBase58Check}}
+        </div>
+
+        <!--Merchant Score-->
+        <div *ngIf="appData.loggedInUser.MerchantEntry != null">
+          <div class="market-widget-field-heading">
+            Merchant Score
+            <span (mouseenter)="showMerchantRanksLeftThingTooltip = true" (mouseleave)="showMerchantRanksLeftThingTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showMerchantRanksLeftThingTooltip" class="info-tooltip-contents" style="width: 25rem;">
+                Total sales and positive reviews can be faked, for example by a merchant constantly transacting with herself. The Merchant Score is robust to this
+                type of gaming, however, and so we use it as the core ranking metric. To explain it simply, Merchant Score only considers how much a merchant has actually burned transacting
+                on the system, which can't be faked, and penalizes merchants who have many in-flight orders (which mitigates exit scams). To learn about exactly how
+                your node computes Merchant Score, visit the ultranet.one website.
+              </div>
+            </span>
+          </div>
+          <div class="market-widget-field-value" style="color: white;">
+            <div>
+              {{appData.loggedInUser.MerchantEntry.MerchantScore}}
+            </div>
+          </div>
+        </div>
+
+        <!--Merchant rank-->
+        <div *ngIf="appData.loggedInUser.MerchantEntry != null">
+          <div class="market-widget-field-heading">
+            Merchant Rank
+            <span (mouseenter)="showMerchantRankLeftThingTooltip = true" (mouseleave)="showMerchantRankLeftThingTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showMerchantRankLeftThingTooltip" class="info-tooltip-contents">
+                This is how your MerchantScore ranks compared to existing merchants.
+              </div>
+            </span>
+          </div>
+          <div class="market-widget-field-value" style="color: white;">
+            <div *ngIf="appData.topMerchants != null">
+              <span *ngIf="appData.loggedInUser.MerchantEntry.MerchantRank < appData.topMerchants.length">#{{appData.loggedInUser.MerchantEntry.MerchantRank+1}}</span>
+              <span *ngIf="appData.loggedInUser.MerchantEntry.MerchantRank >= appData.topMerchants.length">{{appData.topMerchants.length}}</span>
+               <span > of {{appData.topMerchants.length}}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!--Node status-->
+    <div class="market-widget-container">
+      <div class="market-widget-heading">
+        Node and Network Info <pre style="font-size: .5rem;"> </pre>
+        <span (mouseenter)="showNodeStatusTooltip = true" (mouseleave)="showNodeStatusTooltip = false" class="info-tooltip">
+          (?)
+          <div *ngIf="showNodeStatusTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+            Because the Ultranet is totally decentralized like Bitcoin, your node needs to
+            sync with other nodes on the network in order to function. Here, you have a
+            control panel for managing which nodes your node is talking to.
+            <br>
+            <br>
+            Generally, your node syncs with the following steps:
+            <ul>
+              <li>
+                It connects to Bitcoin nodes and downloads the latest Bitcoin headers from them. This supports
+                the Ultranet's decentralized exchange in the "Buy Ultra" tab and it's needed in order to allow you and other users to
+                buy Ultra with Bitcoin without any centralized parties involved.
+              </li>
+              <li>
+                After syncing Bitcoin headers, your node connects to Ultra nodes and downloads the latest Ultra headers from them
+                followed by the latest Ultra blocks. This is very similar to so-called "headers-first"
+                synchronization that is now common in Bitcoin.
+              </li>
+              <li>
+                After your node has downloaded all the latest Ultra blocks and your node's Ultranet
+                blockchain is fully synced, your node downloads all of the latest listings and
+                mempool transactions from its peer nodes. The blockchain has to be synced before this
+                step in order to determine which merchants your node should store listings for based
+                on how much Ultra each merchant has burned on the network.
+              </li>
+            </ul>
+            <br>
+            Note that in general your node cannot process any listings until it has fully synced
+            its Ultranet blockchain. For this reason, your node directs your search
+            queries to peers while you are syncing and intelligently switches back over to local
+            querying once you have downloaded all of the blocks.
+            <br>
+            <br>
+            To learn more about how the Ultranet works, visit the ultranet.one website.
+          </div>
+        </span>
+      </div>
+      <div *ngIf="appData.nodeInfo == null">
+        <div class="help-node-info" style="color: white;">
+          <div *ngIf="appData.localNodeSecret != null && appData.localNodeSecret !== ''">
+            Still loading data...
+          </div>
+          <div class="market-widget-info" *ngIf="appData.localNodeSecret == null || appData.localNodeSecret === ''">
+            You are currently using an untrusted node to browse the Ultranet. When you run
+            your own node, this panel will show information about your peers, among other
+            things.
+          </div>
+        </div>
+      </div>
+      <div *ngIf="appData.nodeInfo != null">
+        <!--Ultra Status-->
+        <div class="market-widget-heading" style="text-align: left; justify-content: flex-start; font-size: 1.25rem;">
+          Node Sync State
+          <span (mouseenter)="showUltraSyncSimpleTooltip = true" (mouseleave)="showUltraSyncSimpleTooltip = false" class="info-tooltip" style="margin-left: .5rem;">
+            (?)
+            <div *ngIf="showUltraSyncSimpleTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+              This is the current sync state of your Ultranet node. To sync with the Ultranet network, your
+              node goes through the following steps:
+              <ul>
+                <li>
+                  Syncing Bitcoin Headers: This means your node is currently downloading Bitcoin headers
+                  from a peer on the Bitcoin network. This is needed so that you and other peers can buy
+                  Ultra using Bitcoin on the decentralized exchange in the "Buy Ultra" tab.
+                </li>
+                <li>
+                  Syncing Ultra Headers: This means your node is currently downloading Ultra headers
+                  from a peer on the Ultranet network.
+                </li>
+                <li>
+                  Syncing Ultra Blocks: This means your node is up-to-date on its headers and is now
+                  downloading all the blocks from a peer on the Ultranet network.
+                </li>
+                <li>
+                  Fully Synced: Your node's blockchain is fully up-to-date.
+                </li>
+              </ul>
+              Note that detailed information on the node's sync status is provided in the advanced section below.
+            </div>
+          </span>
+        </div>
+        <div style="padding-left: .5rem;">
+          <div class="node-value" style="display: block;">
+            <span *ngIf="appData.nodeInfo.UltraStatus.State === 'SYNCING_BITCOIN'" class="syncing">
+              Syncing Bitcoin Headers
+            </span>
+            <span *ngIf="appData.nodeInfo.UltraStatus.State === 'SYNCING_HEADERS'" class="syncing">
+              Syncing Ultra Headers
+            </span>
+            <span *ngIf="appData.nodeInfo.UltraStatus.State === 'SYNCING_BLOCKS'" class="syncing">
+              Syncing Ultra Blocks
+            </span>
+            <span *ngIf="appData.nodeInfo.UltraStatus.State === 'NEED_BLOCKS'" class="almost-synced">
+              Syncing Last Ultra Blocks
+            </span>
+            <span *ngIf="appData.nodeInfo.UltraStatus.State === 'FULLY_CURRENT'" class="synced">
+              Fully Synced
+            </span>
+          </div>
+        </div>
+        <div class="dividing-line"></div>
+
+        <div (click)="appData.showAdvancedNodeInfo = !appData.showAdvancedNodeInfo" class="btn btn-light" style="height: 3rem; line-height: 3rem; font-size: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .5rem; padding-right: .5rem; margin-top: 1rem; margin-bottom: .5rem; font-weight: bold; font-size: 1.25rem;">
+          <span *ngIf="appData.showAdvancedNodeInfo === true">Hide Advanced Node Info</span>
+          <span *ngIf="appData.showAdvancedNodeInfo !== true">Show Advanced Node Info</span>
+        </div>
+
+        <div *ngIf="appData.showAdvancedNodeInfo === true">
+          <!--Detailed Sync Info-->
+          <div class="market-widget-heading" style="text-align: left; justify-content: flex-start; font-size: 1.25rem;">
+            Detailed Sync Info
+            <span (mouseenter)="showUltranetSyncInfoTooltip = true" (mouseleave)="showUltranetSyncInfoTooltip = false" class="info-tooltip" style="margin-left: .5rem;">
+              (?)
+              <div *ngIf="showUltranetSyncInfoTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                This section contains detailed information about your node's current status. Note that you can always hide
+                all this info by hitting "Hide Advanced Node Info."
+              </div>
+            </span>
+          </div>
+          <div style="padding-left: .5rem;">
+            <!--Headers remaining-->
+            <div>
+              <div *ngIf="appData.nodeInfo.UltraStatus.State === 'SYNCING_BITCOIN'" class="node-label">
+                <div class="node-label">
+                  Bitcoin Headers Left:
+                </div>
+                <div class="node-value">
+                  {{appData.nodeInfo.BitcoinStatus.HeadersRemaining}}
+                </div>
+              </div>
+              <div *ngIf="appData.nodeInfo.UltraStatus.State === 'SYNCING_HEADERS'" class="node-label">
+                <div class="node-label">
+                  Ultra Headers Left:
+                </div>
+                <div class="node-value">
+                  {{appData.nodeInfo.UltraStatus.HeadersRemaining}}
+                </div>
+              </div>
+              <div *ngIf="appData.nodeInfo.UltraStatus.State === 'SYNCING_BLOCKS' || appData.nodeInfo.UltraStatus.State === 'NEED_BLOCKS'" class="node-label">
+                <div class="node-label">
+                  Ultra Blocks Left:
+                </div>
+                <div class="node-value">
+                  {{appData.nodeInfo.UltraStatus.BlocksRemaining}}
+                </div>
+              </div> 
+            </div>
+
+            <!--Info when fully synced-->
+            <div *ngIf="appData.nodeInfo.UltraStatus.State === 'FULLY_CURRENT'">
+              <div class="node-label">
+                <div class="node-label">
+                  Last Block Height:
+                </div>
+                <div class="node-value">
+                  <div style="display: flex; align-items: center;">
+                    {{appData.nodeInfo.UltraStatus.LatestHeaderHeight}}
+                    <div (click)="appData._copyText(''+appData.nodeInfo.UltraStatus.LatestHeaderHeight)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                      Copy
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="node-label">
+                <div class="node-label">
+                  Last Block Hash:
+                </div>
+                <div class="node-value" style="display: block; margin-left: 1rem;">
+                  <div style="display: flex; align-items: center;">
+                    {{appData.nodeInfo.UltraStatus.LatestHeaderHash.slice(0,23)}}...
+                    <div (click)="appData._copyText(''+appData.nodeInfo.UltraStatus.LatestHeaderHash)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                      Copy
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="node-label">
+                <div class="node-label">
+                  Last Block Time:
+                </div>
+                <div class="node-value" style="display: block; padding-left: .5rem; font-size: 1rem;">
+                  <div style="display: flex; align-items: center;">
+                    {{_tstampToDate(appData.nodeInfo.UltraStatus.LatestHeaderTstampSecs)}}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="dividing-line"></div>
+
+          <!--Miner status-->
+          <div class="market-widget-heading" style="text-align: left; justify-content: flex-start; font-size: 1.25rem; margin-top: .5rem;">
+            Miner Status
+            <span (mouseenter)="showMinerTooltip = true" (mouseleave)="showMinerTooltip = false" class="info-tooltip" style="margin-left: .5rem;">
+              (?)
+              <div *ngIf="showMinerTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                Ultra is rewarded to a miner each time a block is generated (approximately every ten minutes). Your
+                likelihood of receiving this reward is directly proportional to how much mining power you have compared
+                to everyone else on the network. This section allows you to control whether or not you're mining,
+                and soon will show statistics like how long you should expect to mine before you get a reward given
+                an estimate of your machine's mining power. In order to mine Ultra, you must set at least one public
+                key so that you can receive the block reward when you successfully mine a block. Note that you can copy
+                your public key from above to start mining.
+              </div>
+            </span>
+          </div>
+          <div style="margin-left: .5rem;">
+              <div class="node-label">
+                Miner Public Keys
+                <span (mouseenter)="showMinerPublicKeyInputTooltip = true" (mouseleave)="showMinerPublicKeyInputTooltip = false" class="info-tooltip">
+                  (?)
+                  <div *ngIf="showMinerPublicKeyInputTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                    Enter a comma-separated list of public keys that your mining rewards will be sent to. Note
+                    that when you enter more than one public key, your miner will randomly choose one for each
+                    block it mines (i.e. the rewards will not necessarily be evenly distributed among the keys
+                    you enter). After you enter a list of public keys, hit "Start Mining." If the miner is already
+                    running, you will need to stop it and re-start it.
+                  </div>
+                </span>:
+              </div>
+              <div class="node-value" style="margin-bottom: .5rem; margin-top: .5rem;">
+                <input [(ngModel)]="minerPublicKeysInput" placeholder="Comma-separated list of public keys." type="text" value="" name="" id="" style="width: 22rem; margin-left: 0rem;"/>
+              </div>
+
+            <div *ngIf="appData.nodeInfo.MinerPublicKeys != null && appData.nodeInfo.MinerPublicKeys.length > 0">
+              <div class="synced" style="display: inline-block;">
+                Currently Mining
+              </div>
+              <div>
+              <div class="node-label">
+                Public Keys Set
+                <span (mouseenter)="showMinerPublicKeyReceivingTooltip = true" (mouseleave)="showMinerPublicKeyReceivingTooltip = false" class="info-tooltip">
+                  (?)
+                  <div *ngIf="showMinerPublicKeyReceivingTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                    These are the public keys currently receiving your mining rewards.
+                  </div>
+                </span>:
+              </div>
+              <div *ngIf="appData.nodeInfo.MinerPublicKeys != null">
+                <div class="node-value" *ngFor="let pk of appData.nodeInfo.MinerPublicKeys">
+                  <span>{{pk.slice(0, 20)}}...</span> 
+                  <div (click)="appData._copyText(pk)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                    Copy
+                  </div>
+                </div>
+              </div>
+                
+              </div>
+              <div (click)="updateMiner(true)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-top: .5rem;">
+                Stop Mining
+              </div>
+            </div>
+            <div *ngIf="appData.nodeInfo.MinerPublicKeys == null || appData.nodeInfo.MinerPublicKeys.length === 0">
+              <div class="syncing" style="display: inline-block;">
+                Not Mining
+              </div>
+              <div (click)="updateMiner(false)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                Start Mining
+              </div>
+            </div>
+          </div>
+          <div class="dividing-line" style="margin-top: 1rem;"></div>
+
+          <!--Query Node-->
+          <div class="node-label" style="margin-top: .5rem; font-weight: bold; margin-bottom: .5rem;">
+            Listing Query Node
+            <span (mouseenter)="showQueryNodeTooltip = true" (mouseleave)="showQueryNodeTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showQueryNodeTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                This is a peer that your node will send listing queries to when your node is syncing. After your
+                node is fully synced, this node is automatically switched to the address of your local client. To connect to a different node,
+                enter an address in "&lt;ip address&gt;:&lt;port&gt;" format or "&lt;domain name&gt;:&lt;port&gt;" format
+                and hit "Connect." To connect to a random new query node, hit "Random" and then hit "Connect."
+              </div>
+            </span>:
+          </div>
+          <div class="node-value" style="display: flex; align-items: center; margin-bottom: .5rem;">
+            <span class="node-label" style="margin-right: .5rem;">Current: </span><span style="max-width: 25rem;">{{appData._stripHttp(appData.listingQueryNode)}}</span>
+            <div (click)="appData._copyText(appData._stripHttp(appData.listingQueryNode))" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+              Copy
+            </div>
+          </div>
+          <div class="node-value" style="display: flex; align-items: center;">
+            <input [(ngModel)]="nodeWidgetInfo.queryNodeManualConnection" placeholder="Enter an address" type="text" value="" name="" id="" style="width: 12rem; margin-left: 0rem;"/>
+            <div (click)="_clickChangeQueryNode()" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+              Connect
+            </div>
+            <div (click)="_clickRandomQueryNode()" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+              Random
+            </div>
+          </div>
+          <div class="dividing-line" style="margin-top: 1rem;"></div>
+
+          <div class="market-widget-heading" style="text-align: left; justify-content: flex-start; font-size: 1.25rem;">
+            Ultranet Node Info
+            <span (mouseenter)="showUltranetInfoTooltip = true" (mouseleave)="showUltranetInfoTooltip = false" class="info-tooltip" style="margin-left: .5rem;">
+              (?)
+              <div *ngIf="showUltranetInfoTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                This section contains information about the Ultranet peers you're connected to. You can always hide this whole section
+                by clicking "Hide Advanced Node Info" above.
+              </div>
+            </span>
+          </div>
+          <div style="margin-left: .5rem;">
+            <!--Outbound peers-->
+            <div>
+              <div>
+                <!--Outbound peers-->
+                <div>
+                  <div class="node-label">
+                    Outbound Peers
+                    <span (mouseenter)="showOutboundPeerTooltip = true" (mouseleave)="showOutboundPeerTooltip = false" class="info-tooltip">
+                      (?)
+                      <div *ngIf="showOutboundPeerTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                        Outbound peers are peers you reached out to (as opposed to them reaching out to you). These peers are generally
+                        more trustworthy than inbound peers. If a peer is marked with an asterisk it means we are using that peer to sync headers and blocks right now.
+                      </div>
+                    </span>:
+                  </div>
+                  <div class="node-value address-container">
+                    <div *ngIf="appData.nodeInfo.UltraOutboundPeers == null || appData.nodeInfo.UltraOutboundPeers.length === 0">
+                      Not connected to any outbound peers. 
+                    </div>
+                    <div *ngFor="let peer of appData.nodeInfo.UltraOutboundPeers; index as peerIndex">
+                      <div style="display: flex; align-items: center;">
+                        <div style="display: inline-block;">
+                          <span *ngIf="peer.IsSyncPeer">*</span> {{peer.IP+':'+peer.ProtocolPort}} 
+                        </div>
+                        <div (click)="appData._copyText(peer.IP+':'+peer.ProtocolPort)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                          Copy
+                        </div>
+                        <div (click)="_clickDisconnectUltraPeer(peer.IP+':'+peer.ProtocolPort)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                          Disconnect
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                </div>
+
+                <!--Inbound peers-->
+                <div>
+                  <div class="node-label">
+                    Inbound Peers
+                    <span (mouseenter)="showInboundPeerTooltip = true" (mouseleave)="showInboundPeerTooltip = false" class="info-tooltip">
+                      (?)
+                      <div *ngIf="showInboundPeerTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                        Inbound peers are peers that connected to you from the wider internet. These are usually
+                        less trustworthy than outbound peers. If a peer is marked with an asterisk it means we are using that peer to sync headers and blocks right now.
+                      </div>
+                    </span>:
+                  </div>
+                  <div class="node-value address-container">
+                    <div *ngIf="appData.nodeInfo.UltraInboundPeers == null || appData.nodeInfo.UltraInboundPeers.length === 0">
+                      Not connected to any inbound peers. 
+                    </div>
+                    <div *ngFor="let peer of appData.nodeInfo.UltraInboundPeers; index as peerIndex">
+                      <div style="display: flex; align-items: center;">
+                        <div style="display: inline-block;">
+                          <span *ngIf="peer.IsSyncPeer">*</span> {{peer.IP+':'+peer.ProtocolPort}} 
+                        </div>
+                        <div (click)="appData._copyText(peer.IP+':'+peer.ProtocolPort)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                          Copy
+                        </div>
+                        <div (click)="_clickDisconnectUltraPeer(peer.IP+':'+peer.ProtocolPort)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                          Disconnect
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!--Unconnected peers-->
+                <div>
+                  <div class="node-label">
+                    Unconnected Peers
+                    <span (mouseenter)="showUnconnectedPeerTooltip = true" (mouseleave)="showUnconnectedPeerTooltip = false" class="info-tooltip">
+                      (?)
+                      <div *ngIf="showUnconnectedPeerTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                        These are peers that your node has learned about but is not currently connected to. To connect to one, simply hit "Connect"
+                        on one of them. When you connect to one, they will be added as an outbound peer. Note that they may evict one of your
+                        existing outbound peers if you have too many of them.
+                      </div>
+                    </span>:
+                  </div>
+                  <div class="node-value address-container">
+                    <div *ngIf="appData.nodeInfo.UltraUnconnectedPeers == null || appData.nodeInfo.UltraUnconnectedPeers.length === 0">
+                      No other peers available. 
+                    </div>
+                    <div *ngFor="let peer of appData.nodeInfo.UltraUnconnectedPeers; index as peerIndex">
+                      <div style="display: flex; align-items: center;">
+                        <div style="display: inline-block;">
+                          <span *ngIf="peer.IsSyncPeer">*</span> {{peer.IP+':'+peer.ProtocolPort}} 
+                        </div>
+                        <div (click)="appData._copyText(peer.IP+':'+peer.ProtocolPort)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                          Copy
+                        </div>
+                        <div (click)="_clickConnectUltraPeer(peer.IP+':'+peer.ProtocolPort)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                          Connect
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!--Manual Connection-->
+                <div>
+                  <div class="node-label">
+                    Manual Connection
+                    <span (mouseenter)="showManualUltraConnectionTooltip = true" (mouseleave)="showManualUltraConnectionTooltip = false" class="info-tooltip">
+                      (?)
+                      <div *ngIf="showManualUltraConnectionTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                        Use this field to manually connect to a node that you're aware of. It will be added as an outbound peer and it
+                        will be saved in case you want to connect to it in the future. If you have too many outbound peers, note that
+                        connecting to a new peer may evict one.
+                      </div>
+                    </span>:
+                  </div>
+                  <div class="node-value" style="margin-left: 1rem; display: flex; align-items: center;">
+                    <input [(ngModel)]="nodeWidgetInfo.ultraNodeManualConnection" placeholder="Enter an address" type="text" value="" name="" id="" style="width: 15rem; margin-left: 0rem;"/>
+                    <div (click)="_clickConnectUltraPeer(nodeWidgetInfo.ultraNodeManualConnection)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                      Connect
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              
+            </div>
+            
+          </div>
+          <div class="dividing-line" style="margin-top: 1rem;"></div>
+
+
+          <!--Bitcoin Status-->
+          <div class="market-widget-heading" style="text-align: left; justify-content: flex-start; font-size: 1.25rem; margin-top: .5rem;">
+            Bitcoin Node Info
+            <span (mouseenter)="showBitcoinInfoTooltip = true" (mouseleave)="showBitcoinInfoTooltip = false" class="info-tooltip" style="margin-left: .5rem;">
+              (?)
+              <div *ngIf="showBitcoinInfoTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                To support the decentralized exchange in the "Buy Ultra" tab, which allows you to buy Ultra with
+                Bitcoin without any centralized parties involved, your node needs to sync headers from the Bitcoin
+                network. Normally, this simply involves connecting to a random Bitcoin peer and downloading and
+                validating all the headers. This section allows you to connect to specific peers if desired.
+              </div>
+            </span>:
+          </div>
+          <div style="padding-left: .5rem;">
+            <div>
+              <!--Sync Peer-->
+              <div>
+                <div class="node-label">
+                  Sync Peer
+                  <span (mouseenter)="showBitcoinSyncPeerTooltip = true" (mouseleave)="showBitcoinSyncPeerTooltip = false" class="info-tooltip">
+                    (?)
+                    <div *ngIf="showBitcoinSyncPeerTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                      This is the peer your node is currently using to sync Bitcoin headers. You can change it by connecting to
+                      a different peer below.
+                    </div>
+                  </span>:
+                </div>
+                <div class="node-value" style="display: block; padding-left: 1rem;">
+                  <div *ngIf="appData.nodeInfo.BitcoinSyncPeer == null">
+                    No sync peer currently set. 
+                  </div>
+                  <div *ngIf="appData.nodeInfo.BitcoinSyncPeer != null">
+                    <div style="display: flex; align-items: center;">
+                      <div style="display: inline-block;">
+                        {{appData.nodeInfo.BitcoinSyncPeer.IP+':'+appData.nodeInfo.BitcoinSyncPeer.ProtocolPort}} 
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!--Unconnected peers-->
+              <div>
+                <div class="node-label">
+                  Unconnected Peers
+                  <span (mouseenter)="showBitcoinUnconnectedPeersTooltip = true" (mouseleave)="showBitcoinUnconnectedPeersTooltip = false" class="info-tooltip">
+                    (?)
+                    <div *ngIf="showBitcoinUnconnectedPeersTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                      These are peers that your node has learned about but is not currently connected to. To connect to one, simply hit "Connect"
+                      on one of them. When you connect to one, they will be replace your "Sync Peer."
+                    </div>
+                  </span>:
+                </div>
+                <div class="node-value address-container">
+                  <div *ngIf="appData.nodeInfo.BitcoinUnconnectedPeers == null || appData.nodeInfo.BitcoinUnconnectedPeers.length === 0">
+                    No other peers available. 
+                  </div>
+                  <div *ngFor="let peer of appData.nodeInfo.BitcoinUnconnectedPeers; index as peerIndex">
+                    <div style="display: flex; align-items: center;">
+                      <div style="display: inline-block;">
+                        {{peer.IP+':'+peer.ProtocolPort}} 
+                      </div>
+                      <div (click)="appData._copyText(peer.IP+':'+peer.ProtocolPort)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                        Copy
+                      </div>
+                      <div (click)="_clickConnectBitcoinPeer(peer.IP+':'+peer.ProtocolPort)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                        Connect
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!--Manual Connection-->
+              <div>
+                <div class="node-label">
+                  Manual Connection
+                  <span (mouseenter)="showBitcoinNodeManualConnectionTooltip = true" (mouseleave)="showBitcoinNodeManualConnectionTooltip = false" class="info-tooltip">
+                    (?)
+                    <div *ngIf="showBitcoinNodeManualConnectionTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                      Use this field to manually connect to a node that you're aware of. When you do this it will replace your "Sync Peer."
+                    </div>
+                  </span>:
+                </div>
+                <div class="node-value" style="margin-left: 1rem; display: flex; align-items: center;">
+                  <input [(ngModel)]="nodeWidgetInfo.bitcoinNodeManualConnection" placeholder="Enter an address" type="text" value="" name="" id="" style="width: 15rem; margin-left: 0rem;"/>
+                  <div (click)="_clickConnectBitcoinPeer(nodeWidgetInfo.bitcoinNodeManualConnection)" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+                    Connect
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            
+          </div>
+          <div class="dividing-line" style="margin-top: 1rem;"></div>
+
+          <!--Local Node-->
+          <!--Commenting this out. To connect to a different node the user should just change the URL.-->
+          <!--CORS doesn't even let you change the local node like this.-->
+          <!--
+          <div class="node-label" style="margin-top: .5rem;">
+            Local Node
+            <span (mouseenter)="showLocalNodeTooltip = true" (mouseleave)="showLocalNodeTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showLocalNodeTooltip" class="info-tooltip-contents" style="width: 30rem; top: 0; bottom: auto;">
+                Generally, you are always running a local server that is processing transactions for you and relaying
+                them to the network. This is the connection to that local server. To learn more about how this works,
+                visit ultranet.one. For now, if you don't know what this is don't change it.
+              </div>
+            </span>:
+          </div>
+          <div class="node-value" style="margin-left: 1rem; display: flex; align-items: center;">
+            <input [(ngModel)]="nodeWidgetInfo.widgetLocalNodeSecret" placeholder="Enter a secret..." type="text" value="" name="" id="" style="width: 13rem;"/><span style="margin-left: .5rem;">(shared secret)</span> 
+          </div>
+          <div class="node-value" style="margin-left: 1rem; display: flex; align-items: center; margin-bottom: .5rem;">
+            <input [(ngModel)]="nodeWidgetInfo.widgetLocalNode" placeholder="Enter an address..." type="text" value="" name="" id="" style="width: 13rem; margin-left: 0rem;"/>
+            <div (click)="_clickChangeLocalNode()" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+              Connect
+            </div>
+            <div (click)="_clickResetLocalNode()" class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold; margin-left: .5rem;">
+              Reset
+            </div>
+          </div>
+          -->
+
+          
+        </div>
+
+
+      </div>
+
+    </div>
+
+    <!--Top categories-->
+    <div class="market-widget-container">
+      <div class="market-widget-heading" style="display: block;">
+        Top Categories
+        <span (mouseenter)="showTopCategoriesTooltip = true" (mouseleave)="showTopCategoriesTooltip = false" class="info-tooltip">
+          (?)
+          <div *ngIf="showTopCategoriesTooltip" class="info-tooltip-contents">
+            Every listing has a single category it is associated with. Showing top categories
+            ordered by the number of listings that correspond to them
+            here incentivizes merchants to associate their listings with the most popular
+            categories so that a common taxonomy can emerge without any need for centralized intervention.
+          </div>
+        </span>
+      </div>
+      <div class="market-widget-ranking-container">
+        <div *ngFor="let topCategory of appData.marketPageState.topCategories; index as categoryIndex" class="market-widget-ranking">
+          <span (click)="_clickCategory(topCategory.Category)" style="cursor: pointer;">
+            {{topCategory.Category}} 
+            ({{topCategory.Count}})
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="market-widget-container">
+      <div class="market-widget-heading">
+        Top Merchants (By Score <pre style="font-size: .5rem;"> </pre>
+        <span (mouseenter)="showTopMerchantsTooltip = true" (mouseleave)="showTopMerchantsTooltip = false" class="info-tooltip">
+          ?
+          <div *ngIf="showTopMerchantsTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+            Total sales and positive reviews can be faked, for example by a merchant constantly transacting with herself. The Merchant Score is robust to this
+            type of gaming, however, and so we use it as the core ranking metric. To explain it simply, Merchant Score only considers how much a merchant has actually burned transacting
+            on the system, which can't be faked, and penalizes merchants who have many in-flight orders (which mitigates exit scams). To learn about exactly how
+            your node computes Merchant Score, visit the ultranet.one website.
+          </div>
+        </span>)
+      </div>
+      <div class="market-widget-ranking-container">
+        <div *ngFor="let topMerchant of appData.topMerchants; index as merchantIndex" (click)="_clickMerchantUsername(topMerchant)" class="market-widget-ranking">
+          <span style="cursor: pointer;">
+            <span>{{topMerchant.MerchantRank+1}}. </span>{{topMerchant.Username}} ({{topMerchant.MerchantScore}})
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="market-middle-container">
+  <!-- A search bar on the top -->
+  <div class="market-search-bar-container">
+    <input (keypress)="_searchEnterPressed($event)" [(ngModel)]="searchQuery" placeholder="Find what you're looking for..." type="text" value="" name="" id="" style="width: calc(100% - 13rem)"/>
+    <div (mouseenter)="showListingSearchTooltip = true" (mouseleave)="showListingSearchTooltip = false" class="magnifying-glass info-tooltip"></div>
+    <div *ngIf="showListingSearchTooltip" class="info-tooltip-contents" style="width: 25rem;">
+      The Ultranet is totally decentralized, which means your node downloads all of the
+      listings on the network locally in the same way Bitcoin nodes download all transactions
+      on the network. As a result, after your node is fully synced, searches are generally
+      querying your local database. Before your node is fully synced, however, your node
+      relies on one of its peers to service queries and switches over automatically to local
+      querying once your node is fully synced. This is why you can search immediately even
+      though your node may not be synced yet.
+    </div>
+    <select [(ngModel)]="queryType" style="display: inline-block;" style="width: 13rem; height: 2.5rem; border-radius: 5px;">
+      <option *ngFor="let queryOption of allowedQueryOptions">{{queryOption}}</option>
+    </select>
+  </div>
+  <div *ngIf="recentQueries.length != 0" class="market-featured-listings-title">
+    Recent queries: <div *ngFor="let qq of recentQueries" style="display: inline-block; cursor: pointer; color: white; margin-right: .5rem; text-decoration: underline;" (click)="_updateQuery(qq); searchQuery=qq;">{{qq}}</div>
+  </div>
+  <div *ngIf="selectedListing == null" class="market-search-container">
+    <!-- Listings underneath (featured or query results) -->
+    <div class="market-listings-container">
+      <div class="market-featured-listings-container">
+        <div class="market-featured-listings-title">
+          <div *ngIf="queryBeingShown === '' && (appData == null || appData.loggedInUser == null)" class="help-text" style="margin-bottom: 1rem;">
+            Welcome to the Ultranet Marketplace.
+            <br>
+            <br>
+            The Ultranet Marketplace is a completely
+            decentralized platform that effectively stores a database of listings uploaded by merchants,
+            as well as information like orders, reviews, etc... on a completely decentralized blockchain. In that sense, you can think
+            of it as Bitcoin only instead of mining and storing just payment transactions on the blockchain, the
+            Ultranet can store listings, reputation, messages between users, and much more.
+            <br>
+            <br>
+            On this page, you can search and view listings. To view a listing in detail and/or place an
+            order, click on the title of the listing. To see the details for a merchant along with all the
+            listings she has put up, click on her username.
+            <br>
+            <br>
+            Note that you will not be able to place orders until
+            you <span (click)="_clickCreateAccountOrLogin()" class="market-widget-link">create an account or login</span> and buy some Ultra, which you
+            can do using the completely decentralized exchange mechanism (more information on the <span (click)="_clickBuyUltra()" class="market-widget-link">"Buy Ultra"</span> page).
+            <br>
+            <br>
+            Note that creating an account is quick and anonymous (it just creates a local
+            public/private key pair for you). Happy decentralized shopping.
+          </div>
+
+          <div *ngIf="queryBeingShown === ''">
+            Featured Listings
+            <span (mouseenter)="showFeaturedListingsTooltip = true" (mouseleave)="showFeaturedListingsTooltip = false" class="info-tooltip">
+              (?)
+              <div *ngIf="showFeaturedListingsTooltip" class="info-tooltip-contents">
+                Featured listings consists of a selection of listings from the top merchants. To
+                learn more about how your node computes the featured listings, visit the ultranet.one website.
+                You can always go back to looking at featured listings by hitting enter in the 
+                search bar with an empty query.
+              </div>
+            </span>
+          </div>
+          <div *ngIf="queryBeingShown !== ''">
+            Showing <span style="color: white">{{appData.marketPageState.listingsToShow.length}}</span>
+            result{{appData.marketPageState.listingsToShow.length === 1 ? "" : "s"}} for query 
+            <span style="color: white">{{queryBeingShown}}</span>
+            (go back to <span (click)="queryBeingShown = ''; _updateFeaturedListings()" style="color: white; cursor: pointer;">featured</span>)
+          </div>
+        </div>
+        <div *ngFor="let singleListing of appData.marketPageState.listingsToShow; index as listingIndex" class="market-featured-listing">
+          <div (click)="_showImageView(singleListing)" class="image-container">
+            <div class="image-flex-container">
+              <div class="image" [style.background-image]="'url('+singleListing.ImageUrls[0]+')'">
+              </div>
+            </div>
+          </div>
+          <div class="summary-content-container">
+            <div class="top-content-container">
+              <div class="title" (click)="_clickListingTitle(singleListing)">{{singleListing.Title}}</div>
+            </div>
+
+            <div class="subcontent-container">
+              <div class="subcontent-left-container">  
+                <div class="merchant-username"><span (click)="_clickMerchantUsername(singleListing.MerchantEntry)" style="cursor:pointer;">{{singleListing.MerchantEntry.Username}}</span></div>
+                <div>
+                  <div>
+                  <span class="info-tooltip">
+                    <div *ngIf="showMerchantDescriptionTooltip === listingIndex" class="info-tooltip-contents" style="left: auto; right: .25rem; width: 30rem;">
+                      <div *ngIf="singleListing.MerchantEntry.Description == null || singleListing.MerchantEntry.Description.length === 0" style="white-space: pre-wrap;">Merchant has no description yet.</div>
+                      <div style="white-space: pre-wrap;">{{singleListing.MerchantEntry.Description.slice(0, 2000)}}{{(singleListing.Body.length > 2000) ? "..." : ""}}</div>
+                    </div>
+                  </span>
+                  <span class="info-tooltip" (mouseenter)="showMerchantDescriptionTooltip = listingIndex" (mouseleave)="showMerchantDescriptionTooltip = -1" style="font-weight: bold;">
+                    Merchant Description 
+                  </span>
+                  </div>
+                </div>
+                <div (click)="appData._copyText(singleListing.MerchantEntry.PublicKeyBase58Check)">
+                  <span class="btn btn-light" style="height: 1.5rem; line-height: 1.5rem; padding-top: 0; padding-bottom: 0; padding-left: .25rem; padding-right: .25rem; font-weight: bold;">
+                    Copy Merchant Public Key
+                  </span>
+                </div>
+                <div class="merchant-rank-label subcontent-text">
+                  <div *ngIf="appData.topMerchants != null">
+                    Merchant Rank: <span style="font-weight: normal">#{{singleListing.MerchantEntry.MerchantRank+1}} / {{appData.topMerchants.length}}</span>
+                  </div>
+                  <div>
+                    Merchant Score
+                    <span (mouseenter)="showMerchantScoreTooltip = listingIndex" (mouseleave)="showMerchantScoreTooltip = -1" class="info-tooltip">
+                      (?)
+                      <div *ngIf="showMerchantScoreTooltip === listingIndex" class="info-tooltip-contents" style="right: 2rem; left: auto;">
+                        Total sales and positive reviews can be faked, for example by a merchant constantly transacting with herself. The Merchant Score is robust to this
+                        type of gaming, however, and so we use it as the core ranking metric. To learn about how your node computes the Merchant Score, visit the ultranet.one website.
+                      </div>
+                    </span>:
+                    <span style="font-weight: normal">{{singleListing.MerchantEntry.MerchantScore}}</span>
+                  </div>
+                  <div>
+                   <div>
+                    <span class="info-tooltip">
+                      <div *ngIf="showDescriptionPreviewTooltip === listingIndex" class="info-tooltip-contents" style="left: auto; right: .25rem; width: 30rem;">
+                        <div style="white-space: pre-wrap;">{{singleListing.Body.slice(0, 1000)}}{{(singleListing.Body.length > 1000) ? "..." : ""}}</div>
+                      </div>
+                    </span>
+                    <span class="info-tooltip" (mouseenter)="showDescriptionPreviewTooltip = listingIndex" (mouseleave)="showDescriptionPreviewTooltip = -1">
+                      Listing Decription Preview 
+                    </span>
+                   </div>
+                  </div>
+                  <div *ngIf="singleListing.MerchantEntry.TotalSalesNanos === 0">
+                    No sales yet 
+                  </div>
+                  <div *ngIf="singleListing.MerchantEntry.TotalSalesNanos !== 0">
+                      <span class="info-tooltip">
+                          <div *ngIf="showSalesPreviewTooltip === listingIndex" class="info-tooltip-contents" style="left: auto; right: .25rem; width: 30rem;">
+                              <div>
+                                Total Sales: <span style="font-weight: normal">{{appData.nanosToUltra(singleListing.MerchantEntry.TotalSalesNanos)}} Ultra (=100%)</span>
+                              </div>
+                              <div style="margin-left: 1rem;">
+                                <div>
+                                  In-Flight: <span style="font-weight: normal">{{appData.nanosToUltra(singleListing.MerchantEntry.Stats.RevenueConfirmedNanos)}} (={{(singleListing.MerchantEntry.Stats.RevenueConfirmedNanos / singleListing.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                                </div>
+                                <div>
+                                  Positive: <span style="font-weight: normal">{{appData.nanosToUltra(singleListing.MerchantEntry.Stats.RevenuePositiveNanos)}} (={{(singleListing.MerchantEntry.Stats.RevenuePositiveNanos / singleListing.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                                </div>
+                                <div>
+                                  Neutral: <span style="font-weight: normal">{{appData.nanosToUltra(singleListing.MerchantEntry.Stats.RevenueNeutralNanos)}}  (={{(singleListing.MerchantEntry.Stats.RevenueNeutralNanos / singleListing.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                                </div>
+                                <div>
+                                  Negative: <span style="font-weight: normal">{{appData.nanosToUltra(singleListing.MerchantEntry.Stats.RevenueNegativeNanos)}}  (={{(singleListing.MerchantEntry.Stats.RevenueNegativeNanos / singleListing.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                                </div>
+                                <div>
+                                  Unreviewed: <span style="font-weight: normal">{{appData.nanosToUltra(singleListing.MerchantEntry.Stats.RevenueFulfilledNanos)}} (={{(singleListing.MerchantEntry.Stats.RevenueFulfilledNanos / singleListing.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                                </div>
+                              </div>
+                          </div>
+                      </span>
+                      <span class="info-tooltip" (mouseenter)="showSalesPreviewTooltip = listingIndex" (mouseleave)="showSalesPreviewTooltip = -1">
+                        Sales Preview
+                      </span>
+                      <span (mouseenter)="showTotalSalesTooltip = listingIndex" (mouseleave)="showTotalSalesTooltip = -1" class="info-tooltip">
+                        (?)
+                        <div *ngIf="showTotalSalesTooltip === listingIndex" class="info-tooltip-contents" style="left: 1rem; right: auto;">
+                          Even though total sales and positive reviews can be faked by a merchant, users still
+                          like to see a breakdown of a merchant's activity so we show it here. Just keep in mind that the
+                          Merchant Score is ultimately the only reliable way to compare merchants.
+                        </div>
+                      </span>
+
+                    <div style="margin-left: 1rem;">
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+              <div class="subcontent-right-container">
+                <div class="price-label subcontent-text">
+                  <div>
+                    Price per {{singleListing.UnitNameSingular}}:
+                  </div>
+                  <div style="font-weight: normal;">
+                    <span>{{appData.nanosToUltra(singleListing.PricePerUnitNanos * 1.2, 5)}}</span> Ultra
+                    (~<span>{{appData.nanosToUSD(singleListing.PricePerUnitNanos * 1.2)}}</span> USD)
+                    <span (mouseenter)="showUltraListingTooltip = listingIndex" (mouseleave)="showUltraListingTooltip = -1" class="info-tooltip">
+                      <span style="font-weight: bold;">(?)</span>
+                      <div *ngIf="showUltraListingTooltip === listingIndex" class="info-tooltip-contents" style="right: 1rem; left: auto; width: 25rem;">
+                        Ultra is the currency that powers the Ultranet. The amount that can be mined is fixed and the supply actually shrinks
+                        over time as Ultra is constantly being burned with every transaction on the marketplace. As a result, Ultra is actually more
+                        scarce and more deflationary than Bitcoin, and it has the additional benefit that actual commerce requires it. Transactions on the
+                        Ultranet marketplace require Ultra as the medium of exchange and with each transaction some Ultra is burned, which contributes to
+                        the merchant's reputation over time by adding to her Merchant Score and further bolsters Ultra's hyper-deflationary nature. Ultra
+                        can be purchased anonymously with Bitcoin through the
+                        decentralized exchange mechanism embedded in your node simply by navigating to the "Buy Ultra" tab above. To learn more about how
+                        the decentralized exchange mechanism works, visit the ultranet.one website.
+                      </div>
+                    </span>
+                  </div>
+                  <div style="font-weight: normal">
+                  </div>
+                </div>
+                <div class="price-label subcontent-text">
+                  - (<span class="synced" style="font-size: 1rem;">20% discount </span> 
+                  <span (mouseenter)="showListingSearchDiscountTooltip = listingIndex" (mouseleave)="showListingSearchDiscountTooltip = -1" class="info-tooltip">
+                    <span style="font-weight: bold;">(?)</span>
+                    <div *ngIf="showListingSearchDiscountTooltip === listingIndex" class="info-tooltip-contents" style="right: 1rem; left: auto; width: 25rem;">
+                      For a limited time, you can get a 20% discount on all orders when you enter the public key of an
+                      eligible user who referred you when you create your account. If no eligible user referred you,
+                      you can use sarah's public key, which is listed at the bottom of the ultranet.one website (but only for a limited time).
+                    </div>
+                  </span>)
+                  <div style="font-weight: normal">
+                    = <span style="color: white;">{{appData.nanosToUltra(singleListing.PricePerUnitNanos, 5)}}</span> Ultra
+                    (~<span style="color: white;">{{appData.nanosToUSD(singleListing.PricePerUnitNanos)}}</span> USD)
+                  </div>
+                </div>
+                <div class="subcontent-text">
+                  Category: <span (click)="_clickCategory(singleListing.Category)" style="font-weight: normal; color: white; cursor: pointer; font-weight: bold;">{{singleListing.Category}}</span> 
+                </div>
+                <div *ngIf="singleListing.ShipsTo != null && singleListing.ShipsTo !== ''" class="footer">
+                  Ships To: <span style="font-weight: normal">{{singleListing.ShipsTo}}</span>
+                </div>
+                <div *ngIf="singleListing.ShipsFrom != null && singleListing.ShipsFrom !== ''" class="footer">
+                  Ships From: <span style="font-weight: normal">{{singleListing.ShipsFrom}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!--View for a single listing-->
+  <div *ngIf="selectedListing != null">
+    <div class="top-button-container single-listing-buttons">
+      <div (click)="_clickListingPageBack()" class="btn btn-light">
+        <div class="divtext">
+          Back to Search Results
+        </div>
+      </div>
+    </div>
+    <div class="single-listing-content-container">
+      <div (click)="_showImageView(selectedListing)" class="image-container">
+        <div class="image-flex-container">
+          <div class="image" [style.background-image]="'url('+selectedListing.ImageUrls[0]+')'">
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-content-container">
+        <div class="top-content-container">
+          <div class="title" style="cursor: default;" (click)="_clickListingTitle(selectedListing)">{{selectedListing.Title}}</div>
+        </div>
+
+        <div class="subcontent-container">
+          <div class="subcontent-left-container">  
+            <div class="merchant-username" style="cursor: pointer;" (click)="_clickMerchantUsername(selectedListing.MerchantEntry)">{{selectedListing.MerchantEntry.Username}}</div>
+            <div class="merchant-rank-label subcontent-text">
+              <div *ngIf="appData.topMerchants != null">
+                Merchant Rank: <span style="font-weight: normal">#{{selectedListing.MerchantEntry.MerchantRank+1}} / {{appData.topMerchants.length}}</span>
+              </div>
+              <div>
+                Merchant Score
+                <span (mouseenter)="showMerchantScoreTooltipSingle = true" (mouseleave)="showMerchantScoreTooltipSingle = false" class="info-tooltip">
+                  (?)
+                  <div *ngIf="showMerchantScoreTooltipSingle" class="info-tooltip-contents" style="right: 2rem; left: auto;">
+                    Total sales and positive reviews can be faked, for example by a merchant constantly transacting with herself. The Merchant Score is robust to this
+                    type of gaming, however, and so we use it as the core ranking metric. To learn about how your node computes the Merchant Score, visit the ultranet.one website.
+                  </div>
+                </span>:
+                <span style="font-weight: normal">{{selectedListing.MerchantEntry.MerchantScore}}</span>
+              </div>
+              <div *ngIf="selectedListing.MerchantEntry.TotalSalesNanos === 0">
+                No sales yet 
+              </div>
+              <div *ngIf="selectedListing.MerchantEntry.TotalSalesNanos !== 0">
+                <div>
+                  Total Sales: <span style="font-weight: normal">{{appData.nanosToUltra(selectedListing.MerchantEntry.TotalSalesNanos)}} Ultra (=100%)</span>
+                  <span (mouseenter)="showTotalSalesTooltipSingle = true" (mouseleave)="showTotalSalesTooltipSingle = false" class="info-tooltip">
+                    (?)
+                    <div *ngIf="showTotalSalesTooltipSingle" class="info-tooltip-contents" style="right: 1rem; left: auto;">
+                      Even though total sales and positive reviews can be faked by a merchant, users still
+                      like to see a breakdown of a merchant's activity so we show it here. Just keep in mind that the
+                      Merchant Score is ultimately the only reliable way to compare merchants.
+                    </div>
+                  </span>
+                </div>
+                <div style="margin-left: 1rem;">
+                  <div>
+                    In-Flight: <span style="font-weight: normal">{{appData.nanosToUltra(selectedListing.MerchantEntry.Stats.RevenueConfirmedNanos)}} (={{(selectedListing.MerchantEntry.Stats.RevenueConfirmedNanos / selectedListing.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                  </div>
+                  <div>
+                    Positive: <span style="font-weight: normal">{{appData.nanosToUltra(selectedListing.MerchantEntry.Stats.RevenuePositiveNanos)}} (={{(selectedListing.MerchantEntry.Stats.RevenuePositiveNanos / selectedListing.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                  </div>
+                  <div>
+                    Neutral: <span style="font-weight: normal">{{appData.nanosToUltra(selectedListing.MerchantEntry.Stats.RevenueNeutralNanos)}}  (={{(selectedListing.MerchantEntry.Stats.RevenueNeutralNanos / selectedListing.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                  </div>
+                  <div>
+                    Negative: <span style="font-weight: normal">{{appData.nanosToUltra(selectedListing.MerchantEntry.Stats.RevenueNegativeNanos)}}  (={{(selectedListing.MerchantEntry.Stats.RevenueNegativeNanos / selectedListing.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                  </div>
+                  <div>
+                    Unreviewed: <span style="font-weight: normal">{{appData.nanosToUltra(selectedListing.MerchantEntry.Stats.RevenueFulfilledNanos)}} (={{(selectedListing.MerchantEntry.Stats.RevenueFulfilledNanos / selectedListing.MerchantEntry.TotalSalesNanos * 100).toFixed(2)}}%)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+              <div class="subcontent-right-container">
+                <div class="price-label subcontent-text">
+                  <div>
+                    Price per {{selectedListing.UnitNameSingular}}:
+                  </div>
+                  <div style="font-weight: normal; width: 18.5rem;">
+                    <span style="color: white;">{{appData.nanosToUltra(selectedListing.PricePerUnitNanos * 1.2)}}</span> Ultra
+                    (~<span style="color: white;">{{appData.nanosToUSD(selectedListing.PricePerUnitNanos * 1.2)}}</span> USD)
+                    <span (mouseenter)="showUltraSingleListingTooltip = listingIndex" (mouseleave)="showUltraSingleListingTooltip = -1" class="info-tooltip">
+                      <span style="font-weight: bold;">(?)</span>
+                      <div *ngIf="showUltraSingleListingTooltip === listingIndex" class="info-tooltip-contents" style="right: 1rem; left: auto; width: 25rem;">
+                        Ultra is the currency that powers the Ultranet. The amount that can be mined is fixed and the supply actually shrinks
+                        over time as Ultra is constantly being burned with every transaction on the marketplace. As a result, Ultra is actually more
+                        scarce and more deflationary than Bitcoin, and it has the additional benefit that actual commerce requires it. Transactions on the
+                        Ultranet marketplace require Ultra as the medium of exchange and with each transaction some Ultra is burned, which contributes to
+                        the merchant's reputation over time by adding to her Merchant Score and further bolsters Ultra's hyper-deflationary nature. Ultra
+                        can be purchased anonymously with Bitcoin through the
+                        decentralized exchange mechanism embedded in your node simply by navigating to the "Buy Ultra" tab above. To learn more about how
+                        the decentralized exchange mechanism works, visit the ultranet.one website.
+                      </div>
+                    </span>
+                  </div>
+                  <div style="font-weight: normal">
+                  </div>
+                </div>
+                <div class="price-label subcontent-text">
+                  - (<span class="synced" style="font-size: 1rem;">20% discount </span> 
+                  <span (mouseenter)="showSingleListingSearchDiscountTooltip = listingIndex" (mouseleave)="showSingleListingSearchDiscountTooltip = -1" class="info-tooltip">
+                    <span style="font-weight: bold;">(?)</span>
+                    <div *ngIf="showSingleListingSearchDiscountTooltip === listingIndex" class="info-tooltip-contents" style="right: 1rem; left: auto; width: 25rem;">
+                      For a limited time, you can get a 20% discount on all orders when you enter the public key of an
+                      eligible user who referred you when you create your account. If no eligible user referred you,
+                      you can use sarah's public key, which is listed at the bottom of the ultranet.one website (but only for a limited time).
+                    </div>
+                  </span>)
+                  <div style="font-weight: normal">
+                    = <span style="color: white;">{{appData.nanosToUltra(selectedListing.PricePerUnitNanos)}}</span> Ultra
+                    (~<span style="color: white;">{{appData.nanosToUSD(selectedListing.PricePerUnitNanos)}}</span> USD)
+                  </div>
+                </div>
+                <div class="subcontent-text">
+                  Category: <span (click)="_clickCategory(selectedListing.Category)" style="font-weight: normal; color: white; cursor: pointer; font-weight: bold;">{{selectedListing.Category}}</span> 
+                </div>
+                <div *ngIf="selectedListing.ShipsTo != null && selectedListing.ShipsTo !== ''" class="footer">
+                  Ships To: <span style="font-weight: normal">{{selectedListing.ShipsTo}}</span>
+                </div>
+                <div *ngIf="selectedListing.ShipsFrom != null && selectedListing.ShipsFrom !== ''" class="footer">
+                  Ships From: <span style="font-weight: normal">{{selectedListing.ShipsFrom}}</span>
+                </div>
+              </div>
+        </div>
+      </div>
+
+      <div class="body-content-container">
+        <div class="section-title">
+          Description 
+        </div>
+        <div class="section-description" style="padding-left: 1rem;">{{selectedListing.Body}}</div>
+        <div class="section-title" style="margin-top: 1rem;">
+          Order Form 
+        </div>
+        <div class="section-order-form" style="padding-left: 1rem;">
+          <div *ngIf="selectedListing.RequiredFields != null && selectedListing.RequiredFields.length !== 0">
+            <div style="font-size: 1.25rem;">
+              Required Fields (Will be Encrypted)
+              <span (mouseenter)="showRequiredFieldsTooltip = true" (mouseleave)="showRequiredFieldsTooltip = false" class="info-tooltip">
+                (?)
+                <div *ngIf="showRequiredFieldsTooltip" class="info-tooltip-contents" style="width: 25rem; right: 2rem; left: auto;">
+                  Required fields are custom fields specified by the merchant that she needs in order to fulfill
+                  your order. These can be things like where to send your package to. Note that these fields will
+                  always be end-to-end encrypted with the merchant's public key before being broadcast so nobody other than
+                  the merchant will be able to see them.
+                </div>
+              </span>
+            </div>
+            <div style="padding-left: 1rem; margin-top: .5rem;">
+              <div *ngFor="let fieldStr of selectedListing.RequiredFields; index as fieldIndex" class="field-container">
+                <div style="display: inline-block; width: 20rem; white-space: pre-wrap">{{fieldStr}}: </div>
+                <textarea [(ngModel)]="selectedListingRequiredFieldValues[fieldIndex].value" rows=3 cols=40 placeholder="" type="number" value="" name="" id=""></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="selectedListing.OptionalFields != null && selectedListing.OptionalFields.length !== 0">
+            <div style="font-size: 1.25rem;">
+              Optional Fields (Will be Encrypted) 
+              <span (mouseenter)="showOptionalFieldsTooltip = true" (mouseleave)="showOptionalFieldsTooltip = false" class="info-tooltip">
+                (?)
+                <div *ngIf="showOptionalFieldsTooltip" class="info-tooltip-contents" style="width: 25rem; right: 2rem; left: auto;">
+                  Optional fields are custom fields specified by the merchant that she would like to have
+                  but does not strictly require in order to fulfill your order. These can be optional preferences
+                  like what color you want your item to be, among other things. Note that these fields will
+                  always be end-to-end encrypted with the merchant's public key before being broadcast so nobody other than
+                  the merchant will be able to see them.
+                </div>
+              </span>
+            </div>
+            <div style="padding-left: 1rem; margin-top: .5rem;">
+              <div *ngFor="let fieldStr of selectedListing.OptionalFields; index as fieldIndex" class="field-container">
+                <div style="display: inline-block; width: 20rem; white-space: pre-wrap">{{fieldStr}}: </div>
+                <textarea [(ngModel)]="selectedListingOptionalFieldValues[fieldIndex].value" rows=3 cols=40 placeholder="" type="number" value="" name="" id=""></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size: 1.25rem;">
+            Purchase Fields 
+          </div>
+          <div style="padding-left: 1rem;">
+
+            <div>
+              <span style="margin-right: 1rem;" *ngIf="selectedListing.MinQuantity !== 0">Min Quantity = <span style="font-weight: regular;">{{selectedListing.MinQuantity}}</span></span>
+              <span *ngIf="selectedListing.MaxQuantity !== 0">Max Quantity = <span style="font-weight: regular;">{{selectedListing.MaxQuantity}}</span></span> 
+            </div>
+            <div style="margin-top: .5rem;">
+              <div style="display: inline-block; width: 20rem;">Quantity ({{selectedListing.UnitNamePlural}}): </div>
+              <input [(ngModel)]="selectedListingQuantity" placeholder="{{selectedListing.MinQuantity}}" type="number" value="" name="" id=""/>
+            </div>
+            <div *ngIf="selectedListingQuantity < selectedListing.MinQuantity" class="error">
+              Quantity selected {{selectedListingQuantity == null ? 0 : selectedListingQuantity}} is less than the minimum quantity allowed by the merchant {{selectedListing.MinQuantity}}.
+            </div>
+            <div *ngIf="selectedListing.MaxQuantity !== 0 && selectedListingQuantity > selectedListing.MaxQuantity" class="error">
+              Quantity selected {{selectedListingQuantity == null ? 0 : selectedListingQuantity}} is greater than the maximum quantity allowed by the merchant {{selectedListing.MaxQuantity}}.
+            </div>
+            <div style="margin-top: .5rem;">
+              <div style="display: inline-block; width: 20rem;">Price per {{selectedListing.UnitNameSingular}} (before discount): </div>
+              <span style="margin-right: .5rem; font-weight: normal;"><span style="color: white;">{{appData.nanosToUltra(selectedListing.PricePerUnitNanos * 1.2)}}</span> Ultra / {{selectedListing.UnitNameSingular}}</span>
+              <span style="font-weight: normal;">(= ~<span style="color: white;">{{appData.nanosToUSD(selectedListing.PricePerUnitNanos * 1.2)}}</span> USD)</span>
+            </div>
+            <div style="margin-top: .5rem;">
+              <div style="display: inline-block; width: 20rem;">Item total (before discount): </div>
+              <span style="font-weight: normal;"><span>{{appData.nanosToUltra(selectedListing.PricePerUnitNanos * selectedListingQuantity * 1.2)}}</span> Ultra</span>
+              <span style="margin-left: .5rem; font-weight: normal;">(= ~<span style="color: white;">{{appData.nanosToUSD(selectedListing.PricePerUnitNanos * selectedListingQuantity * 1.2)}}</span> USD)</span>
+            </div>
+            <div style="margin-top: .5rem;">
+              <div style="display: inline-block; width: 20rem;">Discount
+                  <span (mouseenter)="showSingleListingDiscountTooltip = true" (mouseleave)="showSingleListingDiscountTooltip = false" class="info-tooltip">
+                  (?)
+                  <div *ngIf="showSingleListingDiscountTooltip" class="info-tooltip-contents" style="width: 25rem;">
+                    For a limited time, you can get a 20% discount on all orders when you enter the public key of an
+                    eligible user who referred you when you create your account. If no eligible user referred you,
+                    you can use sarah's public key, which is listed at the bottom of the ultranet.one website (but only for a limited time).
+                  </div>
+                  </span>: 
+              </div>
+              <div style="margin-left: -0.8rem; display: inline-block;">
+                <span style="margin-right: .5rem; font-weight: bold; color: #91C8A4;">-</span> <span style="color: #91C8A4; font-weight: normal;">{{appData.nanosToUltra(selectedListing.PricePerUnitNanos * selectedListingQuantity * .2)}}</span> Ultra (= ~<span style="color: #91C8A4; font-weight: normal;">{{appData.nanosToUSD(selectedListing.PricePerUnitNanos * selectedListingQuantity * .2)}}</span> USD) <span style="margin-right: .5rem; font-weight: normal;"><span class="synced" style="font-size: 1rem;">(20% discount)</span></span>
+              </div>
+            </div>
+            <div style="margin-top: .5rem;">
+              <div style="display: inline-block; width: 20rem;">Item Total (after discount): </div>
+              <span style="margin-right: .5rem; font-weight: normal;"><span style="color: white;">{{appData.nanosToUltra(selectedListing.PricePerUnitNanos * selectedListingQuantity)}}</span></span>
+              <span style="font-weight: normal;">(= ~<span style="color: white;">{{appData.nanosToUSD(selectedListing.PricePerUnitNanos * selectedListingQuantity)}}</span> USD)</span>
+            </div>
+            <div *ngIf="selectedListing.TipComment !== ''">
+              <div style="margin-top: .5rem;">
+                <span>Tip comment 
+                <span (mouseenter)="showSelectedListingTipTooltip = true" (mouseleave)="showSelectedListingTipTooltip = false" class="info-tooltip">
+                  (?)
+                  <div *ngIf="showSelectedListingTipTooltip" class="info-tooltip-contents" style="width: 25rem;">
+                    Orders can have tips attached and merchants typically ask users for tips to
+                    accomodate special circumstances. For example, a merchant could have a tip
+                    comment that says "if outside the UK, please include a tip of 1 Ultra to cover international shipping."
+                    Generally, outside
+                    of special circumstances, however, users are not expected to leave tips; they are
+                    only for exceptions that can't be covered by the general listing schema.
+                  </div>
+                </span>
+                : </span>
+                <span style="font-weight: normal;">{{selectedListing.TipComment}}</span>
+              </div>
+              <div style="margin-top: .5rem;">
+                <div style="display: inline-block; width: 20rem;">Tip amount (Ultra)
+                  <span (mouseenter)="showSelectedListingTipAmountTooltip = true" (mouseleave)="showSelectedListingTipAmountTooltip = false" class="info-tooltip">
+                  (?)
+                  <div *ngIf="showSelectedListingTipAmountTooltip" class="info-tooltip-contents" style="width: 25rem;">
+                    Users are only expected to tip if their order meets a special circumstance covered in the tip comment.
+                  </div>
+                  </span>: 
+                </div>
+                <input [(ngModel)]="selectedListingTipAmountUltra" placeholder="0" type="number" value="" name="" id=""/>
+                <span style="margin-left: .5rem;">(= ~{{appData.nanosToUSD(selectedListingTipAmountUltra * 1e9)}} USD)</span>
+              </div>
+            </div>
+
+            <div>
+              <div style="margin-top: .5rem; display: flex; align-items: center; justify-content: normal;">
+                <div style="width: 20rem; display: inline-block;">Total Network Transaction Fee
+                <span (mouseenter)="showSelectedListingTotalFeeTooltip = true" (mouseleave)="showSelectedListingTotalFeeTooltip = false" class="info-tooltip">
+                  (?)
+                  <div *ngIf="showSelectedListingTotalFeeTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                    Because the Ultranet is fully decentralized, transactions usually require a small transaction fee to
+                    incentivize miners to process them in a timely manner (same as with Bitcoin). A transaction is
+                    typically evaluated based on its "fee rate," which is the amount of Ultra it pays per kilobyte
+                    of data it contains. The fee rate being used as the default here is based on the median of the
+                    transaction fees set in the previous Ultra block, but you
+                    can increase it via the "Advanced Fee Options" if you want your transaction to process (aka "confirm") more quickly or decrease
+                    it if you don't care when your transaction confirms. Just be careful not to set it too low or
+                    else your transaction will be stuck in limbo for a long time. If you don't know what you're doing,
+                    stick with the default.
+                  </div>
+                </span>
+                : </div>
+                <span><span style="color: white; font-weight: normal;">{{appData.nanosToUltra(selectedListingTotalFeeNanos)}}</span> Ultra</span>
+                <span style="margin-left: .5rem;">(= ~<span style="color: white; font-weight: normal;">{{appData.nanosToUSD(selectedListingTotalFeeNanos)}}</span> USD)</span>
+
+                <div (click)="showAdvancedFeeRateOptions = !showAdvancedFeeRateOptions" class="btn btn-light" style="width: 10rem; margin-left: .5rem;">
+                  <div *ngIf="!showAdvancedFeeRateOptions" class="divtext">
+                    Show Advanced Fee Options
+                  </div>
+                  <div *ngIf="showAdvancedFeeRateOptions" class="divtext">
+                    Hide Advanced Fee Options
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div *ngIf="showAdvancedFeeRateOptions" style="padding-left: 1.5rem;">
+              <div style="margin-top: .5rem; display: flex; align-items: center; justify-content: normal;">
+                <div style="width: 20rem; display: inline-block;">Network Transaction Fee Rate (in Ultra per KiloByte)
+                <span (mouseenter)="showSelectedListingFeeRateTooltip = true" (mouseleave)="showSelectedListingFeeRateTooltip = false" class="info-tooltip">
+                  (?)
+                  <div *ngIf="showSelectedListingFeeRateTooltip" class="info-tooltip-contents" style="width: 25rem; bottom: 0; top: auto;">
+                    This is the amount of Ultra you pay per KiloByte of data your order requires. It is used
+                    to calculate your "Total Network Transaction Fee" above.
+                    If you set it to a weird value and want to go back to the default, simply
+                    hit "Reset Fee Rate" on the right. Most transactions are under a kilobyte and so the "Total Network Transaction Fee" for your order
+                    should not exceed the "fee rate" specified in this field by much, if at all.
+                  </div>
+                </span>
+                : </div>
+                <input [(ngModel)]="selectedListingFeeRateUltraPerKB" type="number"/>
+                <span style="margin-left: .5rem;">(= ~{{appData.nanosToUSD(selectedListingFeeRateUltraPerKB * 1e9)}} USD/KB)</span>
+
+                <div (click)="_clickSelectedListingReseteFeeRate()" class="btn btn-light" style="margin-left: .5rem;">
+                  <div class="divtext">
+                    Reset Fee Rate
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div style="margin-top: .5rem;">
+                <div style="display: inline-block; width: 20rem;">Total: </div>
+                <span><span style="color: white; font-weight: normal;">{{appData.nanosToUltra(
+                  selectedListing.PricePerUnitNanos * selectedListingQuantity +
+                  selectedListingTipAmountUltra*1e9 +
+                  selectedListingTotalFeeNanos)}}</span> Ultra</span>
+                <span style="margin-left: .5rem;">(= ~<span style="color: white; font-weight: normal;">{{appData.nanosToUSD(
+                  selectedListing.PricePerUnitNanos * selectedListingQuantity +
+                  selectedListingTipAmountUltra*1e9 +
+                  selectedListingTotalFeeNanos)}}</span> USD)</span>
+              </div>
+            </div>
+
+            <div *ngIf="selectedListingError !== ''" class="error">
+              {{selectedListingError}} 
+            </div>
+
+          </div>
+
+          <div (click)="_clickPlaceOrder()" class="btn btn-light yes" style="margin-top: 1rem;">
+            <div class="divtext" style="font-weight: bold;">
+              Place Order
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="height: 75vh;"></div>
+</div>
+
+<div (click)="selectedListingForImages = null" *ngIf="selectedListingForImages != null" class="market-image-container">
+  <div class="image-container">
+    <div style="display: block;">
+      <div style="width: 100vw; height: 40vh; display: flex; align-items: center; justify-content: center;">
+        <img (click)="_stopBubbling($event)" [src]="selectedListingForImages.ImageUrls[selectedListingImageIndex]" class="blue-border" style="max-height: 40vh;" />
+      </div>
+      <div (click)="_stopBubbling($event)" class="image-flex-container" style="justify-content: center; margin-top: 1rem;">
+        <div (click)="_imageSelected(indexOffset)" class="preview-image" *ngFor="let imageUrl of selectedListingForImages.ImageUrls; index as indexOffset">
+          <div class="selected-image" *ngIf="indexOffset === selectedListingImageIndex">
+            <div class="image" style="background-size: contain; border: none; margin-top: 0;" [style.background-image]="'url('+selectedListingForImages.ImageUrls[indexOffset]+')'">
+            </div>
+          </div>
+          <div *ngIf="indexOffset !== selectedListingImageIndex" class="blue-border">
+            <div class="image" style="background-size: contain; border: none; margin-top: 0;" [style.background-image]="'url('+selectedListingForImages.ImageUrls[indexOffset]+')'">
+            </div>
+          </div>
+          
+        </div>        
+      </div>
+      <div (click)="_stopBubbling($event)" style="margin-top: 1rem; width: 100%; height: 4rem; display: flex; justify-content: center;">
+        <div style="display: flex; justify-content: space-between; width: 17rem;">
+          <div (click)="_advanceSelectedImage(-1)" class="btn btn-light" style="display: flex; align-items: center;">
+            Previous 
+          </div>
+          <div (click)="selectedListingForImages = null" class="btn btn-light" style="display: flex; align-items: center;">
+            Done 
+          </div>
+          <div (click)="_advanceSelectedImage(1)" class="btn btn-light" style="display: flex; align-items: center;">
+            Next 
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+   
+</div>
+
+<div style="height: 10rem;">
+</div>

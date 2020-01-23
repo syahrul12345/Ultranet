@@ -1,0 +1,17 @@
+/* AccountComponent's private CSS styles */
+@import '../../variables.scss';
+
+.top-button-container {
+  .btn {
+    margin-right: 1rem;
+  }
+  .logout {
+    width: 10rem;
+  }
+  .normal-text {
+    margin-top: 1rem;
+    .emph {
+      font-weight: bold;
+    }
+  }
+}

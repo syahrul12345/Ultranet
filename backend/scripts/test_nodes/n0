@@ -1,0 +1,24 @@
+DATE=`date +%Y%m%d-%H:%M:%S-%N`
+
+COMMAND="./backend
+  --alsologtostderr --stderrthreshold=FATAL --v=0
+  --addips=localhost:18000
+  --vmodule="*bitcoin_manager*=0,*balance*=0,*frontend*=0,*peer*=0,*addr*=0,*network*=0,*utils*=0,*connection*=0,*main*=0,*server*=0,*mempool*=0,*miner*=0,*blockchain*=0"
+  --shared_secret=abcdef
+  --num_mining_threads=1
+  --miner_public_keys=tUN2QTjWeSbrA9ZhEdvCPCgFVwNh7np3jEdWExWtgZRPBrb1C5TQs1
+  --private_mode=true
+  --data_dir_path=/tmp/fe0_00000"
+
+
+  # --num_mining_threads=1
+  # Below is a datadir for a node with *a lot* of merchants registered
+  # --data_dir_path=/tmp/00000000000000005/"
+  # Below is a datadit with ~745,000 transactions mined for load testing.
+  # --addseeds=1.1.1.1
+  # --addips=localhost:3031,144.217.50.71:3030
+  # --ultra_testnet=true 
+  # --externalips=1.1.1.0:12345
+
+rm /tmp/main.*.log
+(cd ../../ && packr && go build && $COMMAND )

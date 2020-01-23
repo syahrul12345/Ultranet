@@ -1,0 +1,71 @@
+/* AppComponent's private CSS styles */
+@import '../variables.scss';
+
+.top-nav-container {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+
+  .logo {
+    background-image: url('../img/logo.svg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center; 
+    vertical-align: middle;
+
+    margin-right: 1rem;
+    height: 4rem;
+    width: 4rem;
+    display: inline-block;
+  }
+  .left-top-tab-container {
+    width: 62.5%;
+    margin: 0;
+    display: inline-block;
+    .btn {
+      margin: 0;
+      margin-right: 1rem;
+    }
+    vertical-align: middle;
+  }
+  .right-top-tab-container {
+    width: 37.5%;
+    display: inline-block;
+    text-align: right;
+    .btn {
+      margin-left: 1em;
+      width: 13rem;
+      font-size: $button-font-size;
+    }
+    .right-balance-helper {
+        display: flex;
+        place-content: flex-end;
+        align-items: center;
+    }
+  }
+}
+.separating-line {
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.ultra-price-usd {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 1.25rem;
+  color: white;
+}
+
+.top-warning {
+ background-color: $error-color;
+ color: $dark-color;
+ font-weight: bold;
+ z-index: 2;
+ position: fixed;
+ top: 0;
+ left: 0;
+ right: 0;
+ height: 2rem;
+ text-align: center;
+ vertical-align: middle;
+}

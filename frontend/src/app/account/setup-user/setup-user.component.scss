@@ -1,0 +1,295 @@
+/* AccountComponent's private CSS styles */
+@import '../../../variables.scss';
+
+em {
+  color: $important-text-color;
+  font-style: normal;
+}
+.form-label {
+  font-size: $normal-text-size;
+}
+.top-button-container {
+  .btn {
+    margin-right: 1rem;
+  }
+  .logout {
+    width: 10rem;
+  }
+  .normal-text {
+    margin-top: .5rem;
+    .emph {
+      font-weight: bold;
+    }
+  }
+}
+.bottom-button-container {
+  .btn {
+    margin-right: 1rem;
+    margin-top: .5rem;
+  }
+}
+.title {
+    font-size: 1.25rem;
+    color: $light-color;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.needs-basic-form {
+  .subtitle {
+    margin-top: .5rem;
+  }
+  .form-label {
+    display: inline-block;
+    width: 12rem;
+    vertical-align: top;
+    color: $light-color;
+  }
+  .input-container {
+    margin-top: .5rem;
+    .random-username {
+      margin-left: 1rem;
+    }
+    display: flex;
+    align-items: center;
+  }
+  input {
+    width: 20rem;
+  }
+}
+.existing-accounts-list {
+  margin-top: .5rem;
+  .separating-line {
+    background-color: $important-text-color;
+  }
+  .single-account-element {
+    margin-top: .5rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    .username {
+      display: inline-block;
+      width: 25rem;
+      text-align: left;
+      height: $button-height;
+      border: 1px solid $important-text-color;
+      vertical-align: middle;
+    }
+    .login-button {
+      display: inline-block;
+      margin-left: 1rem;
+      vertical-align: middle;
+    }
+    .delete-button {
+      display: inline-block;
+      margin-left: 1rem;
+      vertical-align: middle;
+    }
+  }
+}
+.btn.btn-light.yes {
+  color: $good-color;
+  border-color: $good-color;
+  font-weight: bold;
+  background-color: $separating-line-color;
+}
+.btn.btn-light.no {
+  color: $bad-color;
+  border-color: $bad-color;
+  font-weight: bold;
+  background-color: $light-color;
+}
+.explain-registration {
+  .warning-text {
+    margin-top: .5rem;
+    font-size: $big-text-size;
+  }
+  .normal-text {
+    margin-top: .5rem;
+  }
+  .btn.btn-light {
+    width: 15rem;
+    margin-right: 1rem;
+    margin-top: .5rem;
+  }
+  .btn.btn-light.no {
+    background-color: $dark-color;
+    border-color: $dark-in-between-color;
+    color: $light-color;
+  }
+}
+
+.main-accounts-page, .create-merchant {
+  .title {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: $light-color;
+    width: 100%;
+    text-decoration: none;
+    margin-top: .5rem;
+
+    .minus {
+      color: white;
+      display: inline-block;
+      margin-right: .5rem;
+      cursor: pointer;
+    }
+  }
+
+  .field-container {
+    margin-top: .5rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    height: $button-height;
+
+    .label {
+      font-size: 1rem;
+      font-weight: bold;
+      color: $light-color;
+      text-decoration: none;
+      display: inline-block;
+      margin-right: .5rem;
+      width: 15rem;
+    }
+    .value {
+      font-size: 1rem;
+      font-weight: normal;
+      display: inline-block;
+      color: white;
+      margin-right: 1rem;
+
+      input {
+        width: 15rem;
+      }
+      textarea {
+        width: 50rem;
+      }
+    }
+
+    .dull {
+      font-weight: lighter;
+    }
+
+    .btn {
+      margin-right: 1rem;
+    }
+
+    .public-key {
+      font-size: 1rem;
+      width: 33rem;
+    }
+  }
+
+  .field-container.description {
+    display: block;
+
+    .label {
+      display: block;
+      margin-bottom: .5rem;
+    }
+    .value {
+      display: block;
+    }
+  }
+
+  .help-text {
+    font-size: 1rem;
+    font-weight: lighter;
+    color: $light-color;
+    display: block;
+    margin-top: .5rem;
+    padding-left: 2rem;
+  }
+
+  .separator {
+    height: 1rem;
+  }
+
+  .next-back-container {
+    margin-top: .5rem;
+    .btn.btn-light {
+      width: 7.5rem;
+      margin-right: 1rem;
+    }
+  }
+
+  .logged-in-user-info {
+
+    .separating-line {
+      margin-top: 1.5rem;
+    }
+
+    .unconfirmed {
+      color: $error-color;
+      display: inline-block;
+      margin-left: .5rem;
+    }
+    em {
+      color: white;
+      font-weight: bold;
+    }
+
+    .update-merchant-data {
+      margin-top: 1rem;
+    }
+
+    .merchant-stats {
+      .title {
+        margin-bottom: .5rem;
+      }
+      .field-container {
+        margin-top: 0;
+      }
+      .label, .value {
+        font-size: 1rem;
+      }
+      .subfields {
+        padding-left: 2rem;
+      }
+    }
+  }
+
+  .accounts-list {
+    margin-top: .5rem;
+
+    .account-entry-container {
+      border: 1px solid $dark-in-between-color;
+      padding-left: .5rem;
+      padding-right: .5rem;
+      padding-top: .5rem;
+      padding-bottom: .5rem;
+      margin-bottom: .5rem;
+
+      .field {
+        font-size: 1rem;
+        font-weight: lighter;
+        display: inline-block;
+        color: $light-color;
+        margin-right: 1rem;
+      }
+      .username {
+        color: white;
+        font-weight: bold;
+      }
+      .btn {
+        margin-right: 1rem;
+        margin-bottom: .5rem;
+      }
+      margin-bottom: 1rem;
+    }
+  }
+}
+.error {
+  margin-top: .5rem;
+  color: $error-color;
+  font-weight: bold;
+}
+.merchant-rank-label {
+  color: $light-color;
+  font-size: 1rem;
+}
+em {
+  color: white;
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="479px" height="479px" viewBox="0 0 479 479" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.3 (57544) - http://www.bohemiancoding.com/sketch -->
+    <title>eg_light</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="eg_light" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M239.5,93 C238.965185,93.0005156 238.564484,93.001289 238.297897,93.0023202 C140.840409,93.3792941 92.1116653,162.563422 92.1116653,231.945353 C92.1116653,301.327283 140.921019,370.292996 238.539726,370.004324 C238.752771,370.003694 239.072863,370.002253 239.5,370" id="Path-5" stroke="#979797" stroke-width="34" fill-rule="nonzero" transform="translate(165.805833, 231.502613) rotate(-180.000000) translate(-165.805833, -231.502613) "></path>
+        <rect id="Rectangle-3-Copy-11" fill="#979797" fill-rule="nonzero" x="126" y="215" width="127" height="34"></rect>
+        <path d="M389.5,93 C388.965185,93.0005156 388.564484,93.001289 388.297897,93.0023202 C290.840409,93.3792941 242.111665,162.563422 242.111665,231.945353 C242.111665,301.327283 290.921019,370.292996 388.539726,370.004324 C388.752771,370.003694 389.072863,370.002253 389.5,370" id="Path-5-Copy" stroke="#979797" stroke-width="34" fill-rule="nonzero" transform="translate(315.805833, 231.502613) rotate(-360.000000) translate(-315.805833, -231.502613) "></path>
+        <rect id="Rectangle-3-Copy-12" fill="#979797" fill-rule="nonzero" transform="translate(372.400000, 305.694167) rotate(-270.000000) translate(-372.400000, -305.694167) " x="298.705833" y="288.694167" width="147.388335" height="34"></rect>
+    </g>
+</svg>

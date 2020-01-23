@@ -1,0 +1,365 @@
+@import '../../variables.scss';
+.market-search-bar-container {
+    width: 100%;
+    height: 2.5rem;
+    font-size: 1.25rem;
+    position: relative;
+
+    input {
+      width: 100%;
+      height: 100%;
+      border: 1px solid $light-color;
+      border-radius: 5px;
+      padding-left: 2.5rem;
+    }
+}
+.magnifying-glass[_ngcontent-c1] {
+    background-image: url('../../img/magnifying_glass.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    vertical-align: middle;
+    height: 2rem;
+    width: 2rem;
+    position: absolute;
+    top: 0.2rem;
+    left: .2rem;
+}
+.copy-public-key {
+    height: 2rem;
+    margin-left: .5rem;
+    margin-bottom: .25rem;
+}
+
+// Featured listing designs
+.market-featured-listings-title {
+    margin-top: .5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: $light-color;
+}
+.market-featured-listing {
+  margin-top: .5rem;
+  border: 1px solid $light-color;
+  min-height: 15rem;
+}
+.image-container {
+  height: 100%;
+  width: 14rem;
+  display: inline-block;
+  cursor: pointer;
+
+  .image-flex-container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .image {
+      margin-top: .5rem;
+      height: 13rem; 
+      width: 13rem;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      border: 3px solid $light-color;
+    }
+  }
+}
+.summary-content-container {
+  width: calc(100% - 14rem);
+  height: 100%;
+  display: inline-block;
+  vertical-align: top;
+  padding-right: 1rem;
+
+  .top-content-container {
+    width: 100%;
+
+    .title {
+      margin-top: .5rem;
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: white;
+      display: block;
+
+      cursor: pointer;
+    }
+  }
+
+  .subcontent-container {
+    width: 100%;
+    vertical-align: top;
+
+    .subcontent-text {
+      font-size: 1rem;
+      font-weight: bold;
+      color: $light-color;
+    }
+    .subcontent-left-container {
+      width: calc(100% - 17rem);
+      display: inline-block;
+      vertical-align: top;
+    }
+    .subcontent-right-container {
+      width: 17rem;
+      display: inline-block;
+      vertical-align: top;
+    }
+  }
+
+  .merchant-username {
+    margin-top: 0rem;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    display: block;
+  }
+
+  .footer {
+      font-size: 1rem;
+      font-weight: bold;
+      color: $light-color;
+  }
+}
+
+// Single listing styles.
+.single-listing-buttons {
+  margin-top: .5rem;
+}
+.single-listing-content-container {
+  border: 1px solid $dark-in-between-color;
+  min-height: 10rem;
+  margin-top: .5rem;
+
+  font-weight: bold;
+  color: $light-color;
+  font-size: 1.25rem;
+
+  .body-content-container {
+    padding: .5rem;
+
+    .section-description {
+      margin-top: .5rem;
+      font-size: 1rem;
+      font-weight: normal;
+      white-space: pre-wrap;
+    }
+    .section-order-form {
+      font-size: 1rem;
+
+      .error {
+        margin-top: .5rem;
+        color: $error-color;
+      }
+      .field-container {
+        display: flex;
+        align-items: center;
+        padding-top: .5rem;
+        margin-bottom: .5rem;
+        border-top: 1px solid $dark-in-between-color;
+      }
+      .field-container:last-of-type {
+        padding-bottom: .5rem;
+        border-bottom: 1px solid $dark-in-between-color;
+      }
+    }
+  }
+}
+
+.market-image-container {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #4c4c4cac;
+
+  .image-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+
+    .selected-image {
+      border: 10px solid $error-color;
+      border-radius: 5px;
+    }
+  }
+
+  .blue-border {
+    border: 5px solid #527eb7;
+    border-radius: 5px;
+  }
+  .preview-image {
+    margin-right: 1rem;
+    background-color: $dark-in-between-color;
+    cursor: pointer;
+  }
+}
+
+$left-container-width: 25rem;
+.market-left-container {
+    width: $left-container-width;
+    min-height: 1vh;
+    display: inline-block;
+}
+.market-widget-container {
+    width: calc(100%-.25rem);
+    margin: .25rem;
+    border: 1px solid $light-color;
+    padding: .5rem;
+}
+.market-widget-heading {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: $light-color;
+    width: 100%;
+
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    text-align: center
+}
+.market-widget-link {
+  color: white;
+  text-decoration: underline;
+  font-weight: bold;
+  cursor: pointer
+}
+.market-widget-info {
+  font-size: 1rem;
+  color: $light-color;
+  width: 100%;
+}
+.market-widget-ranking {
+  color: white;
+  text-decoration: underline;
+  font-weight: bold;
+  span {
+    text-decoration: none;
+  }
+}
+.market-widget-field-heading {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: $light-color;
+    width: 100%;
+}
+.market-widget-field-link {
+  color: white;
+  text-decoration: underline;
+  font-weight: bold;
+  cursor: pointer;
+  display: inline;
+}
+.market-widget-field-value {
+    font-size: 1.25rem;
+    font-weight: lighter;
+    color: $light-color;
+}
+.market-widget-field-small {
+    font-size: 1rem;
+    font-weight: lighter;
+    color: #979797;
+    word-wrap: break-word;
+}
+.market-widget-list-field-heading {
+    display: flex;
+    justify-content: left;
+
+    .column {
+      width: 11rem;
+      text-align: center;
+      color: $light-color;
+      font-weight: bold;
+    }
+}
+.market-widget-list-field {
+    display: flex;
+    justify-content: left;
+
+    .column {
+      width: 11rem;
+      text-align: center;
+      color: $light-color;
+      font-weight: lighter;
+      border-top: 1px solid $dark-in-between-color;
+    }
+
+    .link {
+      color: white;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+}
+
+// The middle section
+.market-middle-container {
+    vertical-align: top;
+    padding: .25rem;
+    width: calc(100vw - #{$left-container-width} - 1rem - 45px);
+    min-height: 1vh;
+    display: inline-block;
+}
+.help-text {
+  margin-top: 0;
+  color: $light-color;
+  font-size: 1.5rem;
+  font-weight: normal;
+  text-align: center;
+}
+.help-node-info {
+  margin-top: 0;
+  color: $light-color;
+  font-size: 1.25rem;
+  font-weight: normal;
+  text-align: left;
+}
+.node-label {
+  margin-top: 0;
+  color: $light-color;
+  font-size: 1.25rem;
+  font-weight: normal;
+  text-align: left;
+  display: inline-block;
+}
+.node-value {
+  margin-top: 0;
+  margin-left: .5rem;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: normal;
+  text-align: left;
+  display: inline-block;
+}
+.node-value.address-container {
+  display: block;
+  margin-left: 1rem;
+  max-height: 7rem;
+  overflow-y: scroll;
+  border-bottom: 1px solid $dark-in-between-color;
+  border-top: 1px solid $dark-in-between-color;
+}
+.dividing-line {
+  width: 100%;
+  border-bottom: 1px solid $dark-in-between-color;
+  margin-top: .5rem;
+}
+.synced {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: $good-color;
+}
+.syncing {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: $error-color;
+}
+.almost-synced {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: $yellow-color;
+}

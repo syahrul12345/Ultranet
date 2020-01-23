@@ -1,0 +1,30 @@
+DATE=`date +%Y%m%d-%H:%M:%S-%N`
+
+COMMAND="./backend
+  --alsologtostderr --stderrthreshold=FATAL --v=0
+  --vmodule="*bitcoin_manager*=0,*balance*=0,*frontend*=0,*peer*=0,*addr*=0,*network*=0,*utils*=0,*connection*=0,*main*=0,*server*=0,*mempool*=0,*miner*=2,*blockchain*=0"
+  --ultra_testnet=true 
+  --json_api_port=19001
+  --protocol_listen_port=19000
+  --web_client_port=19002
+  --shared_secret=abcdef
+  --private_mode=true
+  --num_mining_threads=1
+  --miner_public_keys=tUN2QTjWeSbrA9ZhEdvCPCgFVwNh7np3jEdWExWtgZRPBrb1C5TQs1
+  --data_dir_path=/tmp/fe2_$DATE"
+
+  # Below is a datadir for a node with *a lot* of merchants registered
+  # --addips=localhost:17000,localhost:18000
+  # --data_dir_path=/tmp/00000000000000005/"
+  # --addips=localhost:3032
+  # --addseeds=1.1.1.1
+  # --ultra_testnet=true --externalips=2.2.2.2
+  # --min_feerate=3
+  # --target_outbound_peers=1
+  # --num_mining_threads=1
+  # --miner_public_keys=tUN2QTjWeSbrA9ZhEdvCPCgFVwNh7np3jEdWExWtgZRPBrb1C5TQs1
+
+rm /tmp/main.*.log
+(cd ../../ && packr && go build && $COMMAND )
+
+
