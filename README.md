@@ -56,7 +56,7 @@ the Ultranet's core technical concepts (particularly the section entitled "The U
 Below is a screenshot of what the home screen looks like when one runs
 the software.
 
-<!--![](https://gitlab.com/sarahc0nn0r/ultranet/screenshot.png "Welcome to the Ultranet")-->
+![](https://gitlab.com/sarahc0nn0r/ultranet/raw/master/screenshot.png "Welcome to the Ultranet")
 
 ## Building the code
 
