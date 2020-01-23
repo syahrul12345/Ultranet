@@ -52,15 +52,15 @@ the Ultranet's core technical concepts (particularly the section entitled "The U
   Platform Monopoly,” introducing an open-source challenger to take on
   the “Platform Oligarchy” that rules over us today (i.e. the tech giants).
 
-## Preview
+### Preview
 Below is a screenshot of what the home screen looks like when one runs
 the software.
 
 ![](https://gitlab.com/sarahc0nn0r/ultranet/raw/master/screenshot.png "Welcome to the Ultranet")
 
-## Building the code
+## Development
 
-### Context
+### Code Structure
 The Ultranet has two components: a frontend and a backend. Nearly all of the core
 functionality is defined in the backend, which exposes an API that the frontend
 uses to wrap the functionality in a nice UI. The backend is written in Go while the
